@@ -14,7 +14,7 @@
     cat(
       white("Loading saeon ") %+%
         bold$cyan("ipayipi ") %+%
-        white("v0.0.2  ") %+%
+        white("v0.0.4  ") %+%
         silver(" --- https://github.com/SAEONData/ipayipi")
     )
   )

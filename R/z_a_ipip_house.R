@@ -1,17 +1,18 @@
 #' @title Build `ipayipi` data pipeline housing
 #' @description Compiles/creates a list of 'rooms' (folders/directories) required for an 'ipayipi' data-processing pipeline.
 #' @param work_dir The working directory/'room' (or folder) in which all pipeline rooms are 'housed'.
-#' 
+#'\cr \cr
+#' @param r Directory for miscellaneous scripts.
 #' The data is moved through an 'ipayipi' pipeline housing system through the following rooms.
-#' @param source_room 'Room' from which raw-data files are imported. If left `NULL` a 'source_room' will be created in the pipe_house working directory.
-#' @param wait_room Directory into which raw-data moves to from the `source_room`. This is also the room where standardisation of raw-data files begins.
-#' @param nomvet_room 'Room' into which imbibed, standardised raw-data is stored.
-#' @param ipip_room 'Room' where 'station files' are housed. Station files consist of appended, standardised raw-data files---pulled from the `nomvet_room`---that have been, or are ready for further processing.
+#' @param source_room **1**. 'Room' from which raw-data files are imported. If left `NULL` a 'source_room' will be created in the pipe_house working directory.
+#' @param wait_room **2**. Directory into which raw-data moves to from the `source_room`. This is also the room where standardisation of raw-data files begins.
+#' @param nomvet_room **3**. 'Room' into which imbibed, standardised raw-data is stored.
+#' @param ipip_room **4**. 'Room' where 'station files' are housed. Station files consist of appended, standardised raw-data files---pulled from the `nomvet_room`---that have been, or are ready for further processing.
 #' @param raw_room 'Room' wherein raw-data files from the `source_room` are systematically archived. If this is set to `NULL` then raw-data files will not be archived by 'ipayipi'.
 #' @param full If `TRUE` additonal folders in the working directory will be generated for 1) 
 #' @keywords initiate pipeline, folder creation, directory structure
 #' @return List of pipeline housing 'rooms' (filepaths).
-#' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below.
+#' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below. The preffix to the folders created represents this flow of data.
 #'
 #' 1-|--work_dir -----------------------------------------------------------------------|\cr
 #' 2-|--source_room-->|`                                 `|\cr
