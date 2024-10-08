@@ -1,4 +1,4 @@
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pauljeco/ipayipi)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pauljeco/ipayipi?branch=remote_dev)
 
 <img align="right" width="40%" height="40%" src="https://github.com/pauljeco/ipayipi/blob/main/img/ipayipi_120.png">
 
