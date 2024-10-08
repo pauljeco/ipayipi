@@ -24,7 +24,7 @@ sf_dta_chunkr <- function(
     ri = NULL,
     chunk_i = NULL,
     rechunk = FALSE,
-    buff_period = "10 years",
+    buff_period = "50 years",
     i_zeros = 5,
     verbose = FALSE,
     xtra_v = FALSE,
@@ -137,7 +137,7 @@ sf_dta_chunkr <- function(
   it <- indx$indx_tbl
   if (is.null(it)) {
     it <- ipayipi::chunkr_sub_it(dta_indx = FALSE, mn = dts_min, mx = dts_max,
-      buff_period = "10 years", chunk_i = chunk_i
+      buff_period = buff_period, chunk_i = chunk_i
     )
   }
   # if the old index table date_time coverage is limited rename files
@@ -154,7 +154,7 @@ sf_dta_chunkr <- function(
   }
   if (c2 || nrow(it) == 0) {
     nit <- ipayipi::chunkr_sub_it(dta_indx = FALSE, mn = imn, mx = imx,
-      chunk_i = chunk_i, buff_period = "10 years"
+      chunk_i = chunk_i, buff_period = buff_period
     )
     if (nrow(it) > 0) {
       names(nit) <- c("nchnk_fl", "nchnk_cl", "nindx", "dta_new", "d1", "d2")

@@ -60,9 +60,9 @@ phenomena_sts <- function(
     "var_type" <- "f_convert" <- "%ilike%" <- ".SD" <- "phen_name" <-
     ":=" <- NULL
   # get list of data to be imported
-  unwanted <- paste("['.']ipr|['.']ipi|['.']xls|['.']rps|['.']rns|",
+  unwanted <- paste0("['.']ipr|['.']ipi|['.']xls|['.']rps|['.']rns",
     "['.']ods|['.']doc|['.']md", unwanted,
-    sep = "|"
+    collapse = "|"
   )
   unwanted <- gsub(pattern = "\\|$", replacement = "", x = unwanted)
   slist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
@@ -138,7 +138,7 @@ phenomena_sts <- function(
             nrow(phen_new)
           ))
           ri <- readline(prompt =
-              paste0("Enter duplicate row number(s) e.g., c(1,5):")
+              paste0("Enter duplicate row number(s) e.g., c(1,5): ")
           )
           ri <- eval(parse(text = ri))
           if (all(all(!is.integer(ri)),

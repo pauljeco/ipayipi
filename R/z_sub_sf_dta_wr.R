@@ -28,7 +28,7 @@ sf_dta_wr <- function(
     ri = NULL,
     chunk_i = NULL,
     rechunk = FALSE,
-    buff_period = "10 years",
+    buff_period = "50 years",
     i_zeros = 5,
     verbose = TRUE,
     xtra_v = FALSE,

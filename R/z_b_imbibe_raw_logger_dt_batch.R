@@ -12,7 +12,7 @@
 #' @param dt_format Argument passed to `ipayipi::imbibe_raw_logger_dt()`. The function attempts to work out the date-time format from a vector of format types supplied to this argument. The testing is done via `lubridate::parse_date_time()`. `lubridate::parse_date_time()` prioritizes the tesing of date-time formats in the order vector of formats supplied. The default vector of date-time formats supplied should work well for most logger outputs.
 #' @param dt_tz recognized time-zone of the data locale.
 #' @param record_interval If there are is no discrete, record interval set in the logger program, i.e., the sampling is event based, then this parameter must be set to "event_based". Defaults to "continuous".
-#' @param data_setup List of options used to extract data and metadata from instrument data outputs. For a description of the `data_setup` _see_ `ipayipi::read_logger_dt()`.
+#' @param data_setup List of options used to extract data and metadata from instrument data outputs. For a description of the `data_setup` _see_ \code{\link{imbibe_raw_logger_dt}}.
 #' @param logg_interfere_type Two options here: "remote" or "on_site". Each time a logger is visited is counted as a logger interference event. Type _'remote'_ occurs when data is downloaded remotely. Type _'on_site'_is when data was downloaded on site. _See_ `ipayipi::imbibe_raw_logger_dt()`.
 #' @param prompt Should the function use an interactive file selection function
 #'  otherwise all files are returned. TRUE or FALSE.
@@ -65,11 +65,11 @@ imbibe_raw_batch <- function(
 ) {
   "err" <- NULL
   # get list of data to be imported
-  unwanted <- paste("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps|",
-    "['.']rns|['.']ods|['.']doc||['.']md|wait_room",
-    unwanted, sep = "|"
+  unwanted <- paste0("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps",
+    "['.']rns|['.']ods|['.']doc|['.']md|wait_room", unwanted,
+    collapse = "|"
   )
-  unwanted <- gsub(pattern = "\\|$", replacement = "", x = unwanted)
+  unwanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = unwanted)
   slist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
       file_ext_in, prompt = prompt, recurr = recurr, unwanted = unwanted,
     wanted = wanted

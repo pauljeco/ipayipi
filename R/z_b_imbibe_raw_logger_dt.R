@@ -9,39 +9,7 @@
 #' @param dt_tz Recognized time-zone (character string) of the data locale. The default for the package is South African, i.e., "Africa/Johannesburg" which is equivalent to "SAST".
 #' @param record_interval_type If there are is no discrete record interval set in the logger program, i.e., the sampling is event-based, then this parameter must be set to "event_based". By default this function has this parameter set to "continuous", but the record interval is scrutinized by 'ipayipi::record_interval_eval()' --- see the help files for this function for more information.
 #'  The parameter supplied here is only used if there is only one data record and the record interval cannot be evaluated by `ipayipi::record_interval_eval()`.
-#' @param data_setup List of options used to extract data and metadata from instrument data outputs. Mandatory fields are indicated with an '*'.
-#'   File header options include\eqn{*^1}:
-#'   1. *__file_format__ -- the native/raw file format.
-#'   1. *__station_title__ -- the supplied instrument station title.
-#'   1. location -- the standardised location (name) of the station.
-#'   1. *__logger_type__ -- the type of logger.
-#'   1. *__logger_sn__ -- the serial number of the logger.
-#'   1. logger_os -- the operating system (or firmware version) on the logger.
-#'   1. logger_program_name -- the name of the program installed on the logger
-#'       (also 'DLD name' on Cambel Scientific systems).
-#'   1. logger_programe_sig -- signature of the logger program (also 'DLD
-#'       signature' on Cambel Scientific systems).
-#'   1. logger_title -- the custom name given to a logger by the programmer.
-#'   1. table_name -- the generic name of the table containing data.
-#'
-#'   \eqn{*^1} These options must be supplied as a charater string or the row and column index provided as for example, rici(ri = 1, ci = 2). See `?ipayipi::rici()` for more details.
-#'
-#'   1. date_time -- Only the column index must be provided here as an integer, e.g., 3. If the date and time are serperated in different columns, columns must be provided in a logical order as these are concatenated in the provided order.
-#'
-#'  File phenomena information and data \eqn{*^2}:
-#'   1. *__phen_name__ -- a list of row and column numbers corresponding to the names of phenomena (variables).
-#'   1. phen_unit -- a list of row and column numbers corresponding to the names of phenomena units.
-#'   1. phen_var_type -- a vector of character strings designating the type of variable for each phenomenon.
-#'   1. phen_measure -- a list of row and column numbers corresponding to the type of measurement calculated by the logger for each phenomena, e.g., an 'average', 'sample', 'minimum', etc.
-#'   1. phen_offset -- a list of offset values that have been pre-applied to the data, i.e, the offset is only noted and not used to transform the data.
-#'   1. sensor_id -- a list of row and column numbers corresponding to sensor unique id values. Otherwise a vector of character strings designating the type of 'sensor_id' for each phenomenon.
-#'
-#'  \eqn{*^2} These options must be supplied as using `ipayipi::rng_rici()`, or input as a vector of character strings with the actual values. If using     `ipayipi::rng_rici()`, at least the row in which phenomena details are found and the columns wherein these lie are required. See ?ipayipi::rng_rici() for more details.
-#'
-#'   1. *__data_row__ -- a single integer value designating the row where phenomena data begin from.
-#'   1. *__id_col__ -- a single integer value designating a data row unique identifier row.
-#' 
-#' NB! Note that for Solonist xle files there is a prebuilt 'data_setup' `ipayipi::solonist`. If the `file_path` is for an 'xle' file, and `data_setup` is null, then this default data_setup will be used.
+#' @param data_setup List of options used to extract data and metadata from instrument data outputs. These arguments are parsed to \code{\link{imbibe_raw_flat}}.
 #' 
 #' @param remove_prompt Logical; passed to `ipayipi::record_interval_eval()`. Activate a readline prompt to choose whether or not filter our records from `dta_in` with inconsistent record intervals.
 #' @param logg_interfere_type Two options here: "remote" or "on_site". Each time a logger is visited is counted as a logger interference event. Type _'remote'_ occurs when data is downloaded remotely. Type _'on_site'_ is when data was downloaded on site. _See details_ ...

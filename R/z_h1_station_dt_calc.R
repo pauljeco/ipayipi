@@ -24,6 +24,8 @@ dt_calc <- function(
   ...
 ) {
   "%ilike%" <- NULL
+  "table_name" <- NULL
+
   # read in the available data ----
   sfcn <- names(sfc)
   dta_in <- NULL
@@ -94,9 +96,11 @@ dt_calc <- function(
   eval_f <- function(fx) {
     attempt::try_catch(eval(parse(text = paste0(fx, collapse = ""))))
   }
-  dte <- list(attempt::attempt(eval_f(f_params)))
+  dte <- list(attempt::attempt(eval_f(f_params), silent = TRUE))
   if (attempt::is_try_error(dte[[1]])) {
-    print(dte[[1]][1])
+    err <- dte[[1]][1]
+    known_err <- "only 0's may be mixed with negative subscripts"
+    if (!err %ilike% known_err && xtra_v && nrow(dt) > 0) print(dte[[1]][1])
     dte <- list(NULL)
   }
   dt_working <- dte

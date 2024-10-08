@@ -1,13 +1,15 @@
 Package: ipayipi
-Version: 0.2
-Date: 2020-10-28
+Version: 0.0.3
+Date: 2024-10-07
 Title: Logger data processing pipe
 Author: Paul J Gordijn <pj.gordijn@saeon.nrf.ac.za>
 Maintainer: Paul J Gordijn <pj.gordijn@saeon.nrf.ac.za>
 Description: Functions that can be used to generate time series data
  pipelines. Standardising of data and metadata, and processing this.
  Interactive visualisations for examining, infilling, drift correction
- and more.
+ and more. This development version excludes the out-dated seperate rainfall
+ data pipeline. This functionality as been incorporated into the
+ generic pipeline.
 Depends:
     R (>= 4.1.2),
     data.table,
@@ -24,19 +26,11 @@ Imports:
     parallel,
     readxl,
     R.utils,
-    units,
     XML,
     xml2,
     xts,
     mondate,
     readr
-globalVariables(c(": ="),
-    c("Location", "Borehole", "SN", "Start", "End",
-        "Location_uz", "Borehole_uz",
-        "Date_time", "Latitude", "Longtitude", "Event_threshold", "Schedule",
-        "conduct_mS_per_cm",
-        "xle_FileInfo", "xle_LoggerInfo", "xle_LoggerHeader",
-        "date_time", "%ilike%"))
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE)
 LazyData: true

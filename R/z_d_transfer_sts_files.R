@@ -19,7 +19,6 @@
 #' @param file_ext_out The file extension that will be used for the saving of
 #'  files in the 'nomvet_room'. Defaults to ".ipi".
 #' @param verbose Print some details on the files being processed? Logical.
-#' @param cores Allocate number of cores for processing function. Utilises `parallel::mclapply()`; only works on linux.
 #' @details  Aim: Archive each standardised data files in a
 #'  set directory, that is, the '__nomvet_room__' --- part of the
 #'  'ipayipi'  data pipeline. Once archived the data will be used for

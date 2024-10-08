@@ -68,7 +68,6 @@ dta_availability <- function(
 
   # check if the plot tbls are present
   sedta <- lapply(seq_along(slist), function(i) {
-    print(i)
     ds <- sf_dta_read(pipe_house = pipe_house, tv = "data_summary",
       station_file = slist[i], tmp = TRUE
     )[["data_summary"]]

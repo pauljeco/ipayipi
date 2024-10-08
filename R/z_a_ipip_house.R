@@ -13,13 +13,13 @@
 #' @return List of pipeline housing 'rooms' (filepaths).
 #' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below.
 #'
-#' 1-|--work_dir -------------------------------------------------------------|
-#' 2-|--source_room-->|                                                       |
-#' 3-|                |--wait_room-->|                                        |
-#' 4-|                |              |--nomvet_room-->|                       |
-#' 5-|                |                               |--ipip_room            |
-#'   |                |                                                       |
-#' 6-|                |--> raw_room                                           |
+#' 1-|--work_dir -----------------------------------------------------------------------|\cr
+#' 2-|--source_room-->|`                                 `|\cr
+#' 3-|`            `|--wait_room-->|`                      `|\cr
+#' 4-|`            `|`          `|--nomvet_room-->|`        `|\cr
+#' 5-|`            `|`                       `|--ipip_room|\cr
+#' ---|`            `|`                                 `|\cr
+#' 6-|`            `|--> raw_room`                       `|\cr
 #'
 #' _Note the above illustration shows data flow not the structure of an ipayipi directory._
 #'

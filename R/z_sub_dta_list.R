@@ -9,13 +9,12 @@
 #' @param file_ext Character string of the file extension of the input
 #'  data files. E.g., ".csv" for hobo rainfall file exports. This input
 #'  character string should contain the period as in the previous sentence.
-#' @param wanted Vector of strings listing files that should not be
-#'  included in the import.
+#' @param wanted Regex string of files to select for listing. Seperate search tags by using the bar character '|'.
 #' @param baros Should the function include barometric files
 #'  in the final list - TRUE/FALSE. This parameter is specifically for working
 #'  with groundwater data.
 #' @param prompt Set to TRUE for interactive mode.
-#' @param unwanted Vector of strings listing files that should not be included
+#' @param unwanted Regex string of files to filter out the listing. Seperate search tags by using the bar character '|'.
 #'  in the import.
 #' @export
 #' @return A vector of selected R data solonist files.
@@ -33,22 +32,17 @@ dta_list <- function(
   "%ilike%" <- NULL
   slist <- list.files(path = input_dir, pattern = file_ext, recursive = recurr)
 
-  if (baros == FALSE) {
-    bbs <- grep(x = slist, pattern = "BARO", ignore.case = FALSE)
-    bbs <- slist[bbs]
-    # add in unwanted file names here
-    unwanted <- c("rdta_log.rds", "transfer_log.rds", "nomtab",
-      "data_handle.rdhs", "datum_log", "phentab", unwanted, bbs
-    )
-    unwanted <- unwanted[!unwanted %in% wanted]
-  } else {
-    unwanted <- c("rdta_log.rds", "transfer_log.rds", "nomtab",
+  # more unwanted files
+  unwanted <- paste0(c("rdta_log.rds", "transfer_log.rds", "nomtab",
       "data_handle.rdhs", "datum_log", "phentab", unwanted
-    )
-    unwanted <- unwanted[!unwanted %in% wanted]
-  }
-  slist <- slist[!slist %ilike% paste0(unwanted, collapse = "|")]
-  slist <- slist[slist %ilike% paste0(wanted, collapse = "|")]
+    ), collapse = "|"
+  )
+  wanted <- paste0(wanted, collapse = "|")
+  unwanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = unwanted)
+  wanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = wanted)
+  if (baros == FALSE) unwanted <- paste0(unwanted, "|baros")
+  slist <- slist[!slist %ilike% unwanted]
+  slist <- slist[slist %ilike% wanted]
 
   chosen <- function() {
     df <- data.frame(Sites = slist, stringsAsFactors = FALSE)

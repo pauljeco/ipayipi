@@ -11,8 +11,11 @@
   # Packages loading
   invisible(lapply(packages, library, character.only = TRUE))
   packageStartupMessage(
-    cat(white("Loading saeon ") %+% bold$cyan("ipayipi ") %+%
-        white("v0.2  ") %+% silver(" --- https://github.com/SAEONData/ipayipi")
+    cat(
+      white("Loading saeon ") %+%
+        bold$cyan("ipayipi ") %+%
+        white("v0.0.2  ") %+%
+        silver(" --- https://github.com/SAEONData/ipayipi")
     )
   )
 }
