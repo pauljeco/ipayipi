@@ -20,16 +20,18 @@ ipip_house(
 }
 \arguments{
 \item{work_dir}{The working directory/'room' (or folder) in which all pipeline rooms are 'housed'.
+\cr \cr}
 
+\item{r}{Directory for miscellaneous scripts.
 The data is moved through an 'ipayipi' pipeline housing system through the following rooms.}
 
-\item{source_room}{'Room' from which raw-data files are imported. If left \code{NULL} a 'source_room' will be created in the pipe_house working directory.}
+\item{source_room}{\strong{1}. 'Room' from which raw-data files are imported. If left \code{NULL} a 'source_room' will be created in the pipe_house working directory.}
 
-\item{wait_room}{Directory into which raw-data moves to from the \code{source_room}. This is also the room where standardisation of raw-data files begins.}
+\item{wait_room}{\strong{2}. Directory into which raw-data moves to from the \code{source_room}. This is also the room where standardisation of raw-data files begins.}
 
-\item{nomvet_room}{'Room' into which imbibed, standardised raw-data is stored.}
+\item{nomvet_room}{\strong{3}. 'Room' into which imbibed, standardised raw-data is stored.}
 
-\item{ipip_room}{'Room' where 'station files' are housed. Station files consist of appended, standardised raw-data files---pulled from the \code{nomvet_room}---that have been, or are ready for further processing.}
+\item{ipip_room}{\strong{4}. 'Room' where 'station files' are housed. Station files consist of appended, standardised raw-data files---pulled from the \code{nomvet_room}---that have been, or are ready for further processing.}
 
 \item{raw_room}{'Room' wherein raw-data files from the \code{source_room} are systematically archived. If this is set to \code{NULL} then raw-data files will not be archived by 'ipayipi'.}
 
@@ -42,7 +44,7 @@ List of pipeline housing 'rooms' (filepaths).
 Compiles/creates a list of 'rooms' (folders/directories) required for an 'ipayipi' data-processing pipeline.
 }
 \details{
-This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below.
+This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below. The preffix to the folders created represents this flow of data.
 
 1-|--work_dir -----------------------------------------------------------------------|\cr
 2-|--source_room-->|\verb{                                 }|\cr

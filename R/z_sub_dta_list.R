@@ -39,7 +39,10 @@ dta_list <- function(
   )
   wanted <- paste0(wanted, collapse = "|")
   unwanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = unwanted)
+  unwanted <- gsub(pattern = wanted, replacement = "", x = unwanted)
+  unwanted <- gsub(pattern = "\\|\\|", replacement = "|", x = unwanted)
   wanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = wanted)
+  wanted <- gsub(pattern = "\\|\\|", replacement = "|", x = wanted)
   if (baros == FALSE) unwanted <- paste0(unwanted, "|baros")
   slist <- slist[!slist %ilike% unwanted]
   slist <- slist[slist %ilike% wanted]

@@ -210,8 +210,10 @@ dta_availability <- function(
         ),
         colour = station
       ), linewidth = 2
-    ) +
-    ggplot2::geom_segment(
+    )
+  )
+  if (nrow(gs[phen %in% "logger"]) > 0) {
+    p <- p + suppressWarnings(ggplot2::geom_segment(
       data = gs[phen %in% "logger"],
       inherit.aes = FALSE,
       ggplot2::aes(
@@ -223,8 +225,8 @@ dta_availability <- function(
         )
       ),
       colour = "#801b1b", linewidth = 6
-    )
-  )
+    ))
+  }
 
   if (nrow(gs[!phen %in% "logger" & !is.na(phen)]) > 0) {
     p <- suppressWarnings(p + ggplot2::geom_segment(
