@@ -1,10 +1,10 @@
 <!-- badges: start -->
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pauljeco/ipayipi)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/pauljeco/ipayipi?branch=dev_remote)
 <!-- badges: end -->
 
 <img align="right" width="40%" height="40%" src="https://github.com/pauljeco/ipayipi/blob/main/img/ipayipi_120.png">
 
-# **iPayipi** — data processing pipeline
+## **iPayipi** — data processing pipeline
 
 - 'iPayipi' (say 'ee-pie-ee-pea'; [\\ē\\p\\ī\\ē\\ˈē]; isiZulu for a 'pipe', or a homeless person)
 - Build a traceable data pipeline
@@ -13,7 +13,7 @@
 - Advanced processing of groundwater data
 - Generic pipeline construction for open data
 
-# Package installation
+## Package installation
 
 Install the R package 'ipayipi' from Github using `devtools` in your R terminal. If you don't have devtools installed you'll have to run `install.packages('devtools')` in your R console (Windows users will need Rtools, a 'devtools' prerequisite [follow this link to download Rtools for Windows](https://cran.r-project.org/bin/windows/Rtools/)). To install 'ipayipi' from github run the following in your R console:
 
@@ -25,7 +25,7 @@ devtools::install_github("pauljeco/ipayipi/dev_remote")
 devtools::install_github("SAEONdata/ipayipi")
 ```
 
-# Building and running a data pipeline
+## Building and running a data pipeline
 'ipayipi' pipelines consist of six main phases:
 
 1. Initiate pipeline housing.
@@ -49,8 +49,8 @@ devtools::install_github("SAEONdata/ipayipi")
     - `dta_flat_pull()`: To harvest data from stations in long or wide formats.
     - Various plotting functions to examine/cross-examine data.
 
-# Common questions
+## Common questions
  - iPayipi will process raw-flat files in unencrypted formats, e.g., csv, txt, tsv, but has been mainly used for event-based rainfall data, as well as various types of meteorological data. iPayipi comtains a seperate pipeline for advanced processing and visualisation of groundwater data.
 
-# Under the hood
+## Under the hood
 iPayipi utilizes R [data.table](https://github.com/Rdatatable/data.table) for processing data, widely known as R's most efficient (for speed and big data) processing package, and has been out competing native python in this regard. Owing to 'data.table's intuitive syntax (which inspired the python [datatable](https://github.com/h2oai/datatable) package) 'ipayipi' has been built using 'data.table' functionality. This is important for the user to know, especially where familiarity with 'data.table' syntax is necessary to customise data processing sequences (e.g., `dt_calc()`).
