@@ -36,11 +36,11 @@ logger_data_import_batch <- function(
 ) {
 
   # get list of data to be imported
-  unwanted <- paste("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps|",
-    "['.']rns|['.']ods|['.']doc||['.']md|wait_room",
-    unwanted, sep = "|"
+  unwanted <- paste0("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps",
+    "['.']rns|['.']ods|['.']doc|['.']md|wait_room",
+    unwanted, collapse = "|"
   )
-  unwanted <- gsub(pattern = "\\|$", replacement = "", x = unwanted)
+  unwanted <- gsub(pattern = "^\\||\\|$", replacement = "", x = unwanted)
   slist <- ipayipi::dta_list(input_dir = pipe_house$source_room,
     file_ext = file_ext, prompt = prompt, recurr = recurr,
     unwanted = unwanted, wanted = wanted

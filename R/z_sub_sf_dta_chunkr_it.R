@@ -18,7 +18,7 @@ chunkr_sub_it <- function(
     chunk_i = NULL,
     mn = NULL,
     mx = NULL,
-    buff_period = "10 years",
+    buff_period = "50 years",
     ri = NULL,
     rit = NULL,
     ...) {

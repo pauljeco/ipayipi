@@ -6,7 +6,8 @@
 #'  - "dt_harvest": function used to harvest data from a station or other source.
 #'  - "dt_calc_chain": uses `data.table` chaining to perform calculations, filtering/subsetting, and generate new variables.
 #'  - "dt_agg": used to aggregate data by a specified/default function by a desired `time_interval`.
-#'  - "dt_join": merges two datasets via overlap, left, right, inner and outer joins. _Not yet implemented_.
+#'  - "dt_join": merges two datasets via overlap, left, right, inner and outer joins.
+#'  - "dt_clean": runs window filters to detect univariate outliers. Imputes with median if requested (Hampel filter).
 #' @param input_dt The name/keyword of the input data table (character string).
 #'  If not specified at the harvesting stage, "raw" data imported into a station file will be harvested.
 #' @param output_dt The name of the output data table (character string) --- the final table is appended to a station file object.
@@ -34,7 +35,9 @@ p_step <- function(
     stop(paste0("Missing args: ", paste0(m, collapse = ", ")), call. = FALSE)
   })
   # ensure all 'f's are supported/spelt correctly
-  if (!any(f %in% c("dt_calc", "dt_harvest", "dt_agg", "dt_join"))) {
+  if (
+    !any(f %in% c("dt_agg", "dt_calc", "dt_clean", "dt_harvest", "dt_join"))
+  ) {
     stop(paste0("Unrecognised function: ", f))
   }
   # other set up ----

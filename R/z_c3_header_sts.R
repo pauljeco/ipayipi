@@ -96,6 +96,22 @@ header_sts <- function(
         data_sets = list(m$raw_data), ri = nt$record_interval[1],
         intra_check = TRUE
       )
+      # add in dttm ie chng cols if necessary
+      # this will update data_summary from v0.0.2 to 0.0.4 to include inc exc ti
+      if (!"dttm_ie_chng" %in% names(m$data_summary)) {
+        m$data_summary
+        m$data_summary$dttm_inc_exc <- TRUE
+        m$data_summary$dttm_ie_chng <- FALSE
+        nds <- c("dsid", "file_format", "uz_station", "location", "station",
+          "stnd_title", "start_dttm", "end_dttm", "logger_type", "logger_title",
+          "logger_sn", "logger_os", "logger_program_name", "logger_program_sig",
+          "uz_record_interval_type", "uz_record_interval",
+          "record_interval_type", "record_interval", "dttm_inc_exc",
+          "dttm_ie_chng", "uz_table_name", "table_name", "nomvet_name",
+          "file_origin"
+        )
+        data.table::setcolorder(m$data_summary, neworder = nds)
+      }
       # adjust inc exc timeline if necessary
       if (nt$record_interval_type[1] %in% "continuous" &&
           m$data_summary$dttm_ie_chng

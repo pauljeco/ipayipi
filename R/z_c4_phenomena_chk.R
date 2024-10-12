@@ -99,6 +99,11 @@ phenomena_chk <- function(
     invisible(phentabo)
   })
   phen_import <- data.table::rbindlist(phen_import)
+  if ("phens_sts" %in% class(external_phentab)) {
+    phen_import <- external_phentab[phen_name %in% phen_import$uz_phen_name]
+    phen_import <- phen_import[!phen_name %in% c("id", "date_time")]
+    phentab <- external_phentab
+  }
   phentab <- rbind(phentab, phen_import)
 
   # phens must have a column name

@@ -44,7 +44,8 @@ gw_baro_comp_batch <- function(
   prompt = FALSE,
   wanted = NULL,
   unwanted = NULL,
-  recurr = NULL) {
+  recurr = NULL
+) {
 
   # Search the input directory and get a list of the files to compensate.
   #  This is done by reading in the rdta_log file.
@@ -54,7 +55,8 @@ gw_baro_comp_batch <- function(
     rdta_log_file <- readRDS(file.path(input_dir, "rdta_log.rds"))
   } else {
     rdta_log_file <- ipayipi::gw_rdta_log_mk(input_dir = input_dir,
-      recurr = FALSE)
+      recurr = FALSE
+    )
   }
 
   # Check that there are barologger and level logger files
@@ -67,19 +69,21 @@ gw_baro_comp_batch <- function(
   # Filter the rdta_log_file of the baro files
   #    which don't need to be compensated.
   rdta_log_file_filt <- rdta_log_file[
-    rdta_log_file$Rfile_class == "level_file", ]
+    rdta_log_file$Rfile_class == "level_file",
+  ]
   input_file_list <- ipayipi::dta_list(input_dir = input_dir, recurr = recurr,
     prompt = prompt, baros = FALSE, wanted = wanted, unwanted = unwanted,
-    file_ext = ".rds")
+    file_ext = ".rds"
+  )
   if (length(input_file_list) == 0) {
-      stop("There are no such water level files in this directory!")
+    stop("There are no such water level files in this directory!")
   }
   input_file_list <- gsub(pattern = ".rds", replacement = "", input_file_list)
   input_file_list <- intersect(input_file_list, input_file_list)
   rdta_log_file_filt$level_name <-
-      paste0(rdta_log_file_filt$Location, "_", rdta_log_file_filt$Borehole)
+    paste0(rdta_log_file_filt$Location, "_", rdta_log_file_filt$Borehole)
   rdta_log_file_filt <-
-      rdta_log_file_filt[level_name %in% input_file_list, ]
+    rdta_log_file_filt[level_name %in% input_file_list, ]
 
   # For the baro list we just need to check that the appropriate barologger
   #     has been specified in the rdta_log...

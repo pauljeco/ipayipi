@@ -37,16 +37,7 @@ clean_param_eval <- function(
   xtra_v = FALSE,
   ...
 ) {
-  # clean_f <- "hampel"
-  # phen_names <- NULL
-  # phen_names <- list(c("-rain_tot", "temp"))
-  # segs <- NULL
-  # seg_fuzz <- NULL
-  # seg_na_t <- c(0.75, 1)
-  # w_size <- 21
-  # mad_dev <- 3
-  # last_rule <- FALSE
-  # tighten <- 0.65
+
   # default data.tableish arguments
   d_args <- list(clean_f = "hampel", phen_names = "NULL", segs = NULL,
     seg_fuzz = NULL, seg_na_t = 0.75, w_size = 21, mad_dev = 3,
@@ -59,8 +50,8 @@ clean_param_eval <- function(
 
   ## partial evaluation -----------------------------------------------------
   # check filter types
-  cf <- list("hampel")
-  clean_f <- list(clean_f)
+  cf <- c("hampel")
+  clean_f <- c(clean_f)
   m <- clean_f[!clean_f %in% cf]
   m <- lapply(m, function(x) {
     stop(paste0("Mismatch in \'clean_f\' arg: ", paste0(m, collapse = ", ")),

@@ -1,22 +1,12 @@
-#' @title Organise and update a data processing pipeline
-#' description 
-#' @param pipe_seq Pipeline processing steps generated using a list of
-#'  `ipayipi::p_dt()`. Both or either the `pipe_seq` or `pipe_memory` must be
-#'  supplied.
-#' @param pipe_memory A station processing pipeline summary in table format.
-#'  If supplied this will be updated after comparison with pipe_seq.
-#' @param overwrite_pipe_memory If TRUE then extant pipeline processing
-#'  summaries are overwritten, and _vice versa_.
-#' @param pipe_eval If `TRUE` then two pipes will be compared and a flag,
-#'  that is, `update_pipe_data` will be set to `TRUE`.
-#' @param update_pipe_data Defaults to `FALSE`. Is returned as `TRUE` if
-#'  `pipe_seq` is different to `pipe_memory`.
+#' @title Organise and update a data processing pipeline description
+#' @param pipe_seq Pipeline processing steps generated using a list of `ipayipi::p_dt()`. Both or either the `pipe_seq` or `pipe_memory` must be supplied.
+#' @param pipe_memory A station processing pipeline summary in table format. If supplied this will be updated after comparison with pipe_seq.
+#' @param overwrite_pipe_memory If TRUE then extant pipeline processing summaries are overwritten, and _vice versa_.
+#' @param pipe_eval If `TRUE` then two pipes will be compared and a flag, that is, `update_pipe_data` will be set to `TRUE`.
+#' @param update_pipe_data Defaults to `FALSE`. Is returned as `TRUE` if `pipe_seq` is different to `pipe_memory`.
 #' @author Paul J. Gordijn
 #' @export
-#' @return A standardised pipe process summary and a tag indicating whether an
-#'  update has been made to the pipeline. If an update has been made the
-#'  updates have to the entire length/duration, not only a time slice, of the
-#'  processing pipelines data.
+#' @return A standardised pipe process summary and a tag indicating whether an update has been made to the pipeline. If an update has been made the updates have to the entire length/duration, not only a time slice, of the processing pipelines data.
 pipe_process <- function(
   pipe_seq = NULL,
   pipe_memory = NULL,

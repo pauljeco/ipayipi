@@ -11,7 +11,6 @@
 #' @param prompt Should the function use an interactive file selection function otherwise all files are returned. TRUE or FALSE.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
 #' @param verbose Print some details on the files being processed? Logical.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on linux systems.
 #' @keywords time series data; automatic weather station; batch process;
 #'  file standardisation; standardise variables; transform variables
 #' @author Paul J. Gordijn
@@ -60,9 +59,9 @@ phenomena_sts <- function(
     "var_type" <- "f_convert" <- "%ilike%" <- ".SD" <- "phen_name" <-
     ":=" <- NULL
   # get list of data to be imported
-  unwanted <- paste("['.']ipr|['.']ipi|['.']xls|['.']rps|['.']rns|",
+  unwanted <- paste0("['.']ipr|['.']ipi|['.']xls|['.']rps|['.']rns",
     "['.']ods|['.']doc|['.']md", unwanted,
-    sep = "|"
+    collapse = "|"
   )
   unwanted <- gsub(pattern = "\\|$", replacement = "", x = unwanted)
   slist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
@@ -138,7 +137,7 @@ phenomena_sts <- function(
             nrow(phen_new)
           ))
           ri <- readline(prompt =
-              paste0("Enter duplicate row number(s) e.g., c(1,5):")
+              paste0("Enter duplicate row number(s) e.g., c(1,5): ")
           )
           ri <- eval(parse(text = ri))
           if (all(all(!is.integer(ri)),

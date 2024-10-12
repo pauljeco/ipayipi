@@ -43,6 +43,9 @@
 #'
 #'   1. *__data_row__ -- a single integer value designating the row where phenomena data begin from.
 #'   1. id_col -- a single integer value designating a data row unique identifier row.
+#' 
+#' NB! Note that for Solonist xle files there is a prebuilt 'data_setup' `ipayipi::solonist`. If the `file_path` is for an 'xle' file, and `data_setup` is null, then this default data_setup will be used.
+#' 
 #' @param remove_prompt Logical; passed to `ipayipi::record_interval_eval()`. Activate a readline prompt to choose whether or not filter our records from `dta_in` with inconsistent record intervals.
 #' @param logg_interfere_type Two options here: "remote" or "on_site". Each time a logger is visited is counted as a logger interference event. Type _'remote'_ occurs when data is downloaded remotely. Type _'on_site'_ is when data was downloaded on site. _See details_ ...
 #' @param verbose Logical passed to `attempt::attempt()` which reads the logger text file in with either `data.table::fread()` or base R. Also whether to print progress.
