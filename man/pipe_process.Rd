@@ -2,8 +2,7 @@
 % Please edit documentation in R/z_sub_dt_pipe_process.R
 \name{pipe_process}
 \alias{pipe_process}
-\title{Organise and update a data processing pipeline
-description}
+\title{Organise and update a data processing pipeline description}
 \usage{
 pipe_process(
   pipe_seq = NULL,
@@ -15,31 +14,21 @@ pipe_process(
 )
 }
 \arguments{
-\item{pipe_seq}{Pipeline processing steps generated using a list of
-\code{ipayipi::p_dt()}. Both or either the \code{pipe_seq} or \code{pipe_memory} must be
-supplied.}
+\item{pipe_seq}{Pipeline processing steps generated using a list of \code{ipayipi::p_dt()}. Both or either the \code{pipe_seq} or \code{pipe_memory} must be supplied.}
 
-\item{pipe_memory}{A station processing pipeline summary in table format.
-If supplied this will be updated after comparison with pipe_seq.}
+\item{pipe_memory}{A station processing pipeline summary in table format. If supplied this will be updated after comparison with pipe_seq.}
 
-\item{overwrite_pipe_memory}{If TRUE then extant pipeline processing
-summaries are overwritten, and \emph{vice versa}.}
+\item{overwrite_pipe_memory}{If TRUE then extant pipeline processing summaries are overwritten, and \emph{vice versa}.}
 
-\item{pipe_eval}{If \code{TRUE} then two pipes will be compared and a flag,
-that is, \code{update_pipe_data} will be set to \code{TRUE}.}
+\item{pipe_eval}{If \code{TRUE} then two pipes will be compared and a flag, that is, \code{update_pipe_data} will be set to \code{TRUE}.}
 
-\item{update_pipe_data}{Defaults to \code{FALSE}. Is returned as \code{TRUE} if
-\code{pipe_seq} is different to \code{pipe_memory}.}
+\item{update_pipe_data}{Defaults to \code{FALSE}. Is returned as \code{TRUE} if \code{pipe_seq} is different to \code{pipe_memory}.}
 }
 \value{
-A standardised pipe process summary and a tag indicating whether an
-update has been made to the pipeline. If an update has been made the
-updates have to the entire length/duration, not only a time slice, of the
-processing pipelines data.
+A standardised pipe process summary and a tag indicating whether an update has been made to the pipeline. If an update has been made the updates have to the entire length/duration, not only a time slice, of the processing pipelines data.
 }
 \description{
-Organise and update a data processing pipeline
-description
+Organise and update a data processing pipeline description
 }
 \author{
 Paul J. Gordijn

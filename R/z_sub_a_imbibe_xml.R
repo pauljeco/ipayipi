@@ -29,6 +29,15 @@ imbibe_xml <- function(
   "%ilike%" <- ":=" <- ".SD" <- NULL
 
   # Parse xml data to R
+  # Parse xml data to R
+  xm <- attempt::try_catch(XML::xmlParse(file_path),
+    .e = ~ stop(.x),
+    .w = ~ warning(paste0(
+      "XML content inappropriate or does",
+      " not exist. Try xle_import to standardise encoding",
+      " to UTF-8. "
+    ), .x)
+  )
   xm <- attempt::attempt(XML::xmlParse(file_path, trim = TRUE))
 
   # stop imbibe if no data
@@ -108,8 +117,7 @@ imbibe_xml <- function(
   fds <- c("start_time", "stop_time")
   xle_hi <- xle_hi[, (fds) := lapply(.SD, function(x) {
     lubridate::parse_date_time(x, orders = dt_format, tz = dt_tz)
-    }), .SDcols = fds
-  ]
+  }), .SDcols = fds]
   xle_hi$sample_rate <- as.character(
     readr::parse_number(xle_hi$sample_rate) / 100
   )
@@ -141,7 +149,7 @@ imbibe_xml <- function(
   phens <- data.table::data.table(
     phid = seq_along(phens$phen_name),
     phen_name = phens$phen_name,
-    units = phens$phen_unit,
+    units = phens$unit,
     measure = "no_spec",
     var_type = "no_spec",
     offset = phens$offset,
@@ -171,6 +179,10 @@ imbibe_xml <- function(
   pn <- pn[!is.na(pn)]
   dta <- dta[, pn, with = FALSE]
 
+  # check the data half open statement
+  if (is.null(data_setup$dttm_inc_exc)) {
+    data_setup$dttm_inc_exc <- c(TRUE, FALSE)
+  }
   # finalize the data_summary
   data_summary <- data.table::data.table(
     dsid = as.integer(1),
@@ -191,6 +203,8 @@ imbibe_xml <- function(
     uz_record_interval = xle_hi[["sample_rate"]],
     record_interval_type = NA_character_,
     record_interval = NA_character_,
+    dttm_inc_exc = data_setup$dttm_inc_exc[1],
+    dttm_ie_chng = data_setup$dttm_inc_exc[2],
     uz_table_name = data_setup$table_name,
     table_name = NA_character_,
     nomvet_name = NA_character_,

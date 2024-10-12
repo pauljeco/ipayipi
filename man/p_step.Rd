@@ -27,7 +27,8 @@ p_step(
 \item "dt_harvest": function used to harvest data from a station or other source.
 \item "dt_calc_chain": uses \code{data.table} chaining to perform calculations, filtering/subsetting, and generate new variables.
 \item "dt_agg": used to aggregate data by a specified/default function by a desired \code{time_interval}.
-\item "dt_join": merges two datasets via overlap, left, right, inner and outer joins. \emph{Not yet implemented}.
+\item "dt_join": merges two datasets via overlap, left, right, inner and outer joins.
+\item "dt_clean": runs window filters to detect univariate outliers. Imputes with median if requested (Hampel filter).
 }}
 
 \item{input_dt}{The name/keyword of the input data table (character string).

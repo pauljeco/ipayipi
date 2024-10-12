@@ -14,10 +14,10 @@ read_phentab_csv <- function(
     pipe_house = NULL,
     file = NULL,
     ...) {
-  "..ck_cols" <- NULL
+
   if (is.null(file)) {
-    phenlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
-        ".csv", wanted = "phentab"
+    phenlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room,
+      file_ext = ".csv", wanted = "phentab"
     )
     if (length(phenlist) < 1) stop("There is no phentab file in the wait_room!")
     phen_dts <- lapply(phenlist, function(x) {

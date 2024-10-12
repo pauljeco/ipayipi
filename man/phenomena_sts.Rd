@@ -36,8 +36,6 @@ phenomena_sts(
 \item{file_ext_in}{The file extension defaults to ".iph". Other file types could be incorporatted if required.}
 
 \item{verbose}{Print some details on the files being processed? Logical.}
-
-\item{cores}{Number of CPU's to use for processing in parallel. Only applies when working on linux systems.}
 }
 \description{
 Standardise raw data inputs formats and more for the

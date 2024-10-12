@@ -11,7 +11,6 @@
 #' @param prompt Should the function use an interactive file selection function otherwise all files are returned. TRUE or FALSE.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
 #' @param verbose Print some details on the files being processed? Logical.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on linux systems.
 #' @keywords time series data; automatic weather station; batch process;
 #'  file standardisation; standardise variables; transform variables
 #' @author Paul J. Gordijn

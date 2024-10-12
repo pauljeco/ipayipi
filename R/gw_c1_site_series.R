@@ -18,13 +18,14 @@
 #' solr_room <- "./solr_room"
 #' # Set the directory where standardized xle files are stored.
 #' nomvet_room <- "./nomvet_room"
-#' 
+#'
 #' # Batch run xle to R and append where appropriate.
 #' gw_site_series(solr_room = solr_room, nomvet_room = nomvet_room)
 gw_site_series <- function(
   solr_room = NULL,
   nomvet_room = NULL,
-  ...) {
+  ...
+) {
 
   # update the nomvet log and check if data files exist
   # the log is always updated to avoid error buildup
@@ -34,13 +35,13 @@ gw_site_series <- function(
   # check if there is a nomvet log
   nomvet_log_vet <- list.files(
     path = nomvet_room, pattern = "nomvet_log.rds",
-    recursive = FALSE, full.names = TRUE)
+    recursive = FALSE, full.names = TRUE
+  )
 
   # if there are standardised xle files in the nomvet room
   if (length(xlefiles) > 0) {
-    nomvet_log <- gw_xle_log(
-    log_dir = nomvet_room,
-    xlefiles = xlefiles, place = "nomvet_room"
+    nomvet_log <- gw_xle_log(log_dir = nomvet_room, xlefiles = xlefiles,
+      place = "nomvet_room"
     )
     saveRDS(nomvet_log, file.path(nomvet_room, "nomvet_log.rds"))
   } else if (length(xlefiles) <= 0) {

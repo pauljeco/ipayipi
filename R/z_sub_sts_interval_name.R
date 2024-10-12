@@ -101,7 +101,7 @@ sts_interval_name <- function(
     }
     #' minutes to hours
     if (all(int_dt$dfft_secs / 60 == round(int_dt$dfft_secs / 60, digits = 0),
-      int_dt$dfft_units %in% "mins", int_dt$dfft_secs / 60 > 60
+      int_dt$dfft_units %in% "mins", int_dt$dfft_secs / 3600 > 60
     )) {
       int_dt$dfft_units <- "hours"
       int_dt$dfft <- as.numeric(

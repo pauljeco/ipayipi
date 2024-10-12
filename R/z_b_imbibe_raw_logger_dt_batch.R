@@ -85,7 +85,7 @@ imbibe_raw_batch <- function(
   )
   ipayipi::msg(cr_msg, verbose = verbose)
 
-  file_name_dt <- lapply(seq_along(slist), function(i) {
+  file_name_dt <- future.apply::future_lapply(seq_along(slist), function(i) {
     cr_msg <- padr(core_message = paste0(" +> ", slist[i], collapes = ""),
       wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
       force_extras = FALSE, justf = c(1, 1)

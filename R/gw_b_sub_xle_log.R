@@ -50,35 +50,36 @@ gw_xle_log <- function(
   }
   xlefiles <- basename(xlefiles)
   loglist <- lapply(xlefiles, function(x) {
+    print(x)
     top <- attempt::try_catch(
-        XML::xmlRoot(XML::xmlParse(file.path(log_dir, x))),
-      .e = ~ stop(.x),
+      XML::xmlRoot(XML::xmlParse(file.path(log_dir, x))),
+      .e = ~ function(x) stop(.x),
       .w = ~ warning("XML content inappropriate or does not exist.
         Try xle_import to standardise encoding to UTF-8. ", .x)
-  )
-  # Extract logger metadata
-  loc_name <-
-    XML::xmlValue(top[["Instrument_info_data_header"]][["Project_ID"]])
-  bh_name <-
-    XML::xmlValue(top[["Instrument_info_data_header"]][["Location"]])
-  enddate <-
-    XML::xmlValue(top[["File_info"]][["Date"]])
-  endtime <-
-    XML::xmlValue(top[["File_info"]][["Time"]])
-  startdate <-
-    XML::xmlValue(top[["Instrument_info_data_header"]][["Start_time"]])
-  sn <- XML::xmlValue(top[["Instrument_info"]][["Serial_number"]])
-  st_dt <- startdate
-  ed_dt <- paste0(enddate, " ", endtime)
+    )
+    # Extract logger metadata
+    loc_name <-
+      XML::xmlValue(top[["Instrument_info_data_header"]][["Project_ID"]])
+    bh_name <-
+      XML::xmlValue(top[["Instrument_info_data_header"]][["Location"]])
+    enddate <-
+      XML::xmlValue(top[["File_info"]][["Date"]])
+    endtime <-
+      XML::xmlValue(top[["File_info"]][["Time"]])
+    startdate <-
+      XML::xmlValue(top[["Instrument_info_data_header"]][["Start_time"]])
+    sn <- XML::xmlValue(top[["Instrument_info"]][["Serial_number"]])
+    st_dt <- startdate
+    ed_dt <- paste0(enddate, " ", endtime)
 
-  logdta <- data.frame(
-    Location = loc_name,
-    Borehole = bh_name,
-    SN = sn,
-    Start = as.POSIXct(st_dt),
-    End = as.POSIXct(ed_dt),
-    file.name = x
-  )
+    logdta <- data.frame(
+      Location = loc_name,
+      Borehole = bh_name,
+      SN = sn,
+      Start = as.POSIXct(st_dt),
+      End = as.POSIXct(ed_dt),
+      file.name = x
+    )
   })
 
   # Use data.table package to convert a list into a data frame -> data table
