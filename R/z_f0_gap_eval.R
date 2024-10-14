@@ -106,7 +106,10 @@ gap_eval <- function(
     while (l > 1 && any(dx$odd)) {
       dx <- dx[odd != TRUE]
       l <- nrow(dx)
-      dx$odd <- c(dx$start_dttm[1:(l - 1)] > dx$start_dttm[(2:(l))], FALSE)
+      if (nrow(dx) > 1) {
+        dx$odd <- c(dx$start_dttm[1:(l - 1)] > dx$start_dttm[(2:(l))], FALSE)
+      }
+      l <- nrow(dx)
     }
     # get rit and ri
     rit <- dx$record_interval_type
