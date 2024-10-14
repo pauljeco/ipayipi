@@ -11,9 +11,10 @@
 #' @author Paul J. Gordijn
 #' @export
 read_phentab_csv <- function(
-    pipe_house = NULL,
-    file = NULL,
-    ...) {
+  pipe_house = NULL,
+  file = NULL,
+  ...
+) {
 
   if (is.null(file)) {
     phenlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room,

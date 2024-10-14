@@ -34,6 +34,9 @@ ipayipi_data_log <- function(
   methdr <- future.apply::future_lapply(slist, function(x) {
     m <- readRDS(file.path(log_dir, x))
     methdr <- m$data_summary
+    methdr <- update_ds(methdr)
+    m$data_summary <- methdr
+    saveRDS(m, file.path(log_dir, x))
     invisible(methdr)
   })
   methdr <- data.table::rbindlist(methdr)

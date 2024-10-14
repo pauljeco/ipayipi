@@ -32,17 +32,6 @@ gap_eval_batch <- function(
   xtra_v = FALSE,
   ...
 ) {
-  # gap_problem_thresh_s <- 6 * 60 * 60
-  # event_thresh_s <- 10 * 60
-  # meta_events <- "meta_events"
-  # station_ext <- ".ipip"
-  # prompt <- FALSE
-  # wanted <- NULL
-  # unwanted <- NULL
-  # verbose <- TRUE
-  # keep_open <- FALSE
-  # cores <- 4
-  # xtra_v <- TRUE
 
   # get list of station names in the ipip directory
   station_files <- ipayipi::dta_list(
