@@ -15,8 +15,6 @@
 #' @param unwanted Similar to wanted, but keywords for filtering out unwanted stations.
 #' @param prompt Should the function use an interactive file selection function otherwise all files are returned. TRUE or FALSE.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on Linux.
-#' @param keep_open Logical. Keep _hidden_ 'station_file' open for ease of access. Defaults to `FALSE`.
 #' @author Paul J. Gordijn
 #' @details Gap data for each station and respective tables are extracted from the station, using `ipayipi::gap_eval()`. Gap tables are combined with the full record of data in a data summary table and plotted using ggplot2. Note that 'gaps' can be edited by imbibing metadata into a stations record, _see_ `ipayipi::gap_eval()` for details.
 #' @return A list containing a plot, which shows the availability of data, the gap data as formatted for plotting. The plot is produced using `ggplot2::ggplot()`.
@@ -39,7 +37,6 @@ dta_availability <- function(
   unwanted = NULL,
   recurr = TRUE,
   prompt = FALSE,
-  keep_open = TRUE,
   xtra_v = FALSE,
   ...
 ) {
@@ -183,12 +180,12 @@ dta_availability <- function(
     use.names = TRUE
   )
   gs <- gs[, ":="(start_dttm = gap_start, end_dttm = gap_end)]
-  gs$table_wrd <- paste0(gs$station, ": ", gs$data_yes)
   sedta <- sedta[, station := stnd_title][, gid := ""]
   gs <- rbind(gs, sedta, use.names = TRUE, fill = TRUE)
+  gs$table_wrd <- paste0(gs$station, ": ", gs$data_yes)
 
   p <- suppressWarnings(ggplot2::ggplot(
-    gs[phen %in% "logger"],
+    gs[data_yes %in% 1],
     ggplot2::aes(
       y = data_yes, x = start_dttm,
       group = data_yes, colour = station,
@@ -247,7 +244,7 @@ dta_availability <- function(
       breaks = sedta$data_yes, labels = paste0(
         sedta$station, "\n", sedta$table_name
       )
-    ) + khroma::scale_colour_sunset(discrete = TRUE) +
+    ) + khroma::scale_colour_sunset(scale_name = "station", discrete = TRUE) +
     ggplot2::labs(x = "Date") +
     egg::theme_article() +
     ggplot2::theme(axis.title.y = ggplot2::element_blank(),
