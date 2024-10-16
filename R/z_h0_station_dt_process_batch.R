@@ -35,20 +35,9 @@ dt_process_batch <- function(
   unwanted_tbls = "_tmp",
   verbose = FALSE,
   xtra_v = FALSE,
-  keep_open = TRUE,
   ...
 ) {
-  # overwrite_pipe_memory = FALSE
-  # output_dt_preffix = "dt_"
-  # output_dt_suffix = NULL
-  # station_ext = ".ipip"
-  # wanted = NULL
-  # unwanted = NULL
-  # prompt = FALSE
-  # unwanted_tbls = "_tmp"
-  # verbose = FALSE
-  # cores = getOption("mc.cores", 2L)
-  # keep_open <- TRUE
+
   # get list of station names in the ipip directory
   station_files <- ipayipi::dta_list(
     input_dir = pipe_house$ipip_room, file_ext = station_ext, prompt = prompt,

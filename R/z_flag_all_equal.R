@@ -5,7 +5,8 @@ flag_all_equal <- function(x, ...) {
   if (length(x) == 0) {
     d <- NA
   } else {
-    d <- data.table::fifelse(mean(x, ...) == x[1], TRUE, FALSE)
+    l <- length(unique(x))
+    d <- data.table::fifelse(l == 1, 1, 0)
   }
-  return(as.logical(d))
+  return(d)
 }

@@ -16,38 +16,25 @@ logger_data_import_batch(
 )
 }
 \arguments{
-\item{pipe_house}{List of pipeline directories. \strong{See}
-\code{ipayipi::ipip_house()} \strong{for details}.}
+\item{pipe_house}{List of pipeline directories. \strong{See} \code{ipayipi::ipip_house()} \strong{for details}.}
 
-\item{prompt}{Should the function use an interactive file selection function
-otherwise all files are returned. \code{TRUE} or \code{FALSE}.}
+\item{prompt}{Should the function use an interactive file selection function otherwise all files are returned. \code{TRUE} or \code{FALSE}.}
 
-\item{recurr}{Should the function search recursively into sub directories
-for hobo rainfall csv export files? \code{TRUE} or \code{FALSE}.}
+\item{recurr}{Should the function search recursively into sub directories for hobo rainfall csv export files? \code{TRUE} or \code{FALSE}.}
 
-\item{wanted}{Vector of strings listing files that should not be
-included in the import.}
+\item{wanted}{Vector of strings listing files that should not be included in the import.}
 
-\item{unwanted}{Vector of strings listing files that should not be included
-in the import.}
+\item{unwanted}{Vector of strings listing files that should not be included in the import.}
 
-\item{file_ext}{The file extension defaults to ".dat". Other file types could
-be incorporatted if required.}
+\item{file_ext}{The file extension defaults to ".dat". Other file types could be incorporatted if required.}
 
 \item{verbose}{Print some details on the files being processed? Logical.}
-
-\item{cores}{Number of CPU's to use for processing in parallel. Only applies when working on Linux.}
 }
 \description{
-Locates, copies, then pastes logger data files into the
-'wait_room'. Duplicate file names will have unique consequtive integers
-added as a suffix.
+Locates, copies, then pastes logger data files into the 'wait_room'. Duplicate file names will have unique consequtive integers added as a suffix.
 }
 \details{
-Copies logger data files into a directory where further data
-standardisation will take place in the 'ipayipi' data pipeline. Once
-the files have been standardised in native R format files the data is
-transferred into \code{nomvet_room}.
+Copies logger data files into a directory where further data standardisation will take place in the 'ipayipi' data pipeline. Once the files have been standardised in native R format files the data is transferred into \code{nomvet_room}.
 }
 \author{
 Paul J. Gordijn

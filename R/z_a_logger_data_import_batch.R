@@ -1,28 +1,15 @@
 #' @title Import logger data
-#' @description Locates, copies, then pastes logger data files into the
-#'  'wait_room'. Duplicate file names will have unique consequtive integers
-#'  added as a suffix.
-#' @param pipe_house List of pipeline directories. __See__
-#'  `ipayipi::ipip_house()` __for details__.
-#' @param prompt Should the function use an interactive file selection function
-#'  otherwise all files are returned. `TRUE` or `FALSE`.
-#' @param recurr Should the function search recursively into sub directories
-#'  for hobo rainfall csv export files? `TRUE` or `FALSE`.
-#' @param wanted Vector of strings listing files that should not be
-#'  included in the import.
-#' @param unwanted Vector of strings listing files that should not be included
-#'  in the import.
-#' @param file_ext The file extension defaults to ".dat". Other file types could
-#'  be incorporatted if required.
+#' @description Locates, copies, then pastes logger data files into the 'wait_room'. Duplicate file names will have unique consequtive integers added as a suffix.
+#' @param pipe_house List of pipeline directories. __See__ `ipayipi::ipip_house()` __for details__.
+#' @param prompt Should the function use an interactive file selection function otherwise all files are returned. `TRUE` or `FALSE`.
+#' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? `TRUE` or `FALSE`.
+#' @param wanted Vector of strings listing files that should not be included in the import.
+#' @param unwanted Vector of strings listing files that should not be included in the import.
+#' @param file_ext The file extension defaults to ".dat". Other file types could be incorporatted if required.
 #' @param verbose Print some details on the files being processed? Logical.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on Linux.
-#' @keywords import logger data files; meteorological data; automatic weather
-#'  station; batch process; hydrological data;
+#' @keywords import logger data files; meteorological data; automatic weather station; batch process; hydrological data;
 #' @author Paul J. Gordijn
-#' @details Copies logger data files into a directory where further data
-#'  standardisation will take place in the 'ipayipi' data pipeline. Once
-#'  the files have been standardised in native R format files the data is
-#'  transferred into `nomvet_room`.
+#' @details Copies logger data files into a directory where further data standardisation will take place in the 'ipayipi' data pipeline. Once the files have been standardised in native R format files the data is transferred into `nomvet_room`.
 #' @export
 logger_data_import_batch <- function(
   pipe_house = NULL,
