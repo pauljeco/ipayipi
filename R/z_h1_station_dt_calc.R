@@ -7,6 +7,7 @@
 #' @param station_file_ext The station file extension (period included '.'). Defaults to '.ipip'.
 #' @param verbose Logical. Whether or not to report messages and progress.
 #' @param xtra_v Logical. Whether or not to report xtra messages, progess, plus print data tables.
+#' @param chunk_v Whether or not to indicate the start of data chunking.
 #' @details Note that gap metadata will be transferred to the station file's 'gap' table.
 #' @return A list containing the processed data sets 'dts_dt'.
 #' @author Paul J. Gordijn
@@ -21,6 +22,7 @@ dt_calc <- function(
   ppsij = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- NULL
@@ -50,13 +52,13 @@ dt_calc <- function(
     paste(dirname(station_file), station_file_ext, "/", sep = "|"),
     "", station_file
   )
-  ipayipi::msg(paste0("Calc station: ", station), xtra_v)
+  ipayipi::msg(crayon::bgWhite(paste0("Calc station: ", station)), xtra_v)
 
   # eindx filter
   dta_in <- dt_dta_filter(dta_link = dta_in, ppsij = ppsij)
   # open data ----
   dt <- dt_dta_open(dta_link = dta_in[[1]])
-  ipayipi::msg("Pre-calc data", xtra_v)
+  ipayipi::msg("Pre-calc data", chunk_v)
   if (xtra_v) print(head(dt))
 
   # organise f_params ----
@@ -134,10 +136,10 @@ dt_calc <- function(
     d <- dta_sets[[dsi]]
     if (!data.table::is.data.table(d)) d <- unlist(d, recursive = TRUE)
     n <- names(dta_sets)[dsi]
-    ipayipi::msg("Chunking data", xtra_v)
+    ipayipi::msg("Chunking data", chunk_v)
     sf_dta_wr(dta_room = file.path(dirname((sfc[1])), n[1]),
       dta = d, overwrite = TRUE, tn = n[1], ri = ppsij[1]$time_interval,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   })
   # remove harvest data ----

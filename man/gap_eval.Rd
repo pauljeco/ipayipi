@@ -15,6 +15,7 @@ gap_eval(
   meta_events = "meta_events",
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   tbl_n = "^raw_*",
   ...
 )

@@ -112,8 +112,22 @@ p_step <- function(
     sapply(f_params_agg, function(x) length(x) != 0)
   ]
 
+  # formatting for dt_clean ----
+  f_params_clean <- list(
+    f_params[any(class(f_params) %in% "dt_clean_params")]
+  )
+  f_params_clean <- f_params_clean[
+    sapply(f_params_clean, function(x) length(x) != 0)
+  ]
+  f_params_clean <- unlist(f_params_clean, recursive = FALSE)
+  f_params_clean <- lapply(f_params_clean, function(x) {
+    x <- deparse(x, control = "niceNames")
+    x <- sub("^expression['(']", "~(", x)
+    x
+  })
+
   f_params_text <- list(f_params_calc, f_params_harvest, f_params_join,
-    f_params_agg
+    f_params_agg, f_params_clean
   )
   f_params_text <- unlist(f_params_text[
     sapply(f_params_text, function(x) length(x) != 0)

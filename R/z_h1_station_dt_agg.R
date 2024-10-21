@@ -191,7 +191,7 @@ dt_agg <- function(
           expr = xz[, lapply(.SD, function(x) eval(parse(text = z))),
             by = dttm_fl, .SDcols = cols
           ][, lapply(.SD, function(x) {
-            data.table::fifelse(is.infinite(x) | is.nan(x), NA_real_, x)
+            data.table::fifelse(is.infinite(x) | is.nan(x), NA, x)
           }), by = dttm_fl, .SDcols = cols],
           .w = ~xz[, lapply(.SD, function(x) {
             x <- eval(parse(text = z))
@@ -202,7 +202,7 @@ dt_agg <- function(
             return(x)
           }), by = dttm_fl, .SDcols = cols
           ][, lapply(.SD, function(x) {
-            data.table::fifelse(is.infinite(x) | is.nan(x), NA_real_, x)
+            data.table::fifelse(is.infinite(x) | is.nan(x), NA, x)
           }), by = dttm_fl, .SDcols = cols]
         ))
         data.table::setnames(xzi, old = "dttm_fl", new = "date_time")

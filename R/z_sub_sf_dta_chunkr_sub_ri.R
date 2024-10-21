@@ -7,25 +7,28 @@
 #' @param chunk_i The chunking interval. Must be a string representing a time period. The string is standardised by `ipayipi::sts_interval_name()`. If no chunk interval is provided the function will estimate an appropriate chunking interval based on the record interval.
 #' @param i_zeros Used to name chunked files; the number of leading zeros to include before a chunk number index.
 #' @param verbose Logical. Whether or not to report messages and progress.
+#' @param chunk_v Logical. Prints messages to do with chunking.
 #' @keywords Internal
 #' @export
 #' @noRd
 #' @author Paul J Gordijn
 #' @details This function is an internal function called by others in the pipeline. Its main funciton is to standardise how data is chunked and maintain time-series data integrity. Chunking is done per a 'chunking index' that seperates data chunks by a date floor and ceiling. The index number serves as the identifier for a particular chunk. In addition to the chunk table index the overall min and max date-time of the data series is provided in an index list.
 sf_dta_chunkr_sub_ri <- function(
-    dta_room = NULL,
-    indx = NULL,
-    dta_sets = NULL,
-    rit = NULL,
-    ri = NULL,
-    chunk_i = NULL,
-    spchr = NULL,
-    rechunk = FALSE,
-    verbose = TRUE,
-    xtra_v = FALSE,
-    ...) {
+  dta_room = NULL,
+  indx = NULL,
+  dta_sets = NULL,
+  rit = NULL,
+  ri = NULL,
+  chunk_i = NULL,
+  spchr = NULL,
+  rechunk = FALSE,
+  verbose = TRUE,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
+  ...
+) {
   "cumn" <- "dta" <- NULL
-  ipayipi::msg("Evaluating data record interval", xtra_v)
+  ipayipi::msg("Evaluating data record interval", chunk_v)
   if (all(
     !is.null(dta_sets),
     is.null(indx) && is.null(ri) || !is.null(indx) && rechunk

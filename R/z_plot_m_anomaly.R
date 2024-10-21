@@ -113,16 +113,17 @@ plot_m_anomaly <- function(
         title = x
       ) +
       ggplot2::scale_x_continuous(
-        breaks = dtas[[x]][!is.na(xlab)]$id,
-        minor_breaks = dtas[[x]][is.na(xlab)]$id,
-        labels = dtas[[x]][!is.na(xlab)]$xlab
+        breaks = dtas[[x]][!xlab %in% ""]$id,
+        minor_breaks = dtas[[x]][xlab %in% ""]$id,
+        labels = dtas[[x]][!xlab %in% ""]$xlab
       ) +
-      ggplot2::guides(x = ggplot2::guide_axis(minor.ticks = TRUE),
+      ggplot2::guides(
+        x = ggplot2::guide_axis(minor.ticks = TRUE),
         y = ggplot2::guide_axis(minor.ticks = TRUE)
       ) +
       ggplot2::theme(
         axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, hjust = 1),
-        axis.minor.ticks.x.bottom = ggplot2::element_line(colour = '#a09d9d'),
+        axis.minor.ticks.x.bottom = ggplot2::element_line(colour = "#a09d9d"),
         panel.grid.major.y = ggplot2::element_line(colour = "#5f555530")
       )
   }

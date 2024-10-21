@@ -28,7 +28,7 @@ meta_to_station <- function(
   unwanted = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
-  keep_open = TRUE,
+  chunk_v = FALSE,
   ...
 ) {
   if (is.null(input_dir)) input_dir <- pipe_house$ipip_room
@@ -60,7 +60,7 @@ meta_to_station <- function(
     mdta <- edb[which(edb[[stnd_title_col_name]] %in% sfn[1])]
     # write event metadata to temporary station file
     unlink(sfc[in_station_meta_name], recursive = TRUE)
-    ipayipi::msg("Chunking logger event data", xtra_v)
+    ipayipi::msg("Chunking logger event data", chunk_v)
     ipayipi::sf_dta_wr(
       dta_room = file.path(dirname((sfc[1])), in_station_meta_name),
       dta = mdta, overwrite = TRUE, tn = in_station_meta_name,

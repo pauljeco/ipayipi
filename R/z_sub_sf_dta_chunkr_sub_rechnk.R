@@ -13,19 +13,21 @@
 #' @export
 #' @author Paul J Gordijn
 sf_dta_chunkr_sub_rechnk <- function(
-    dta_room = NULL,
-    dts_min = NULL,
-    dts_max = NULL,
-    indx = NULL,
-    chunk_i = NULL,
-    rechunk = FALSE,
-    buff_period = "50 years",
-    i_zeros = 5,
-    verbose = TRUE,
-    xtra_v = FALSE,
-    ...) {
+  dta_room = NULL,
+  dts_min = NULL,
+  dts_max = NULL,
+  indx = NULL,
+  chunk_i = NULL,
+  rechunk = FALSE,
+  buff_period = "50 years",
+  i_zeros = 5,
+  verbose = TRUE,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
+  ...
+) {
   "chnk_fl" <- "chnk_cl" <- "dta" <- NULL
-  ipayipi::msg("Rechuning: sf_dta_chunkr_sub_rechnk()", xtra_v)
+  ipayipi::msg("Rechuning: sf_dta_chunkr_sub_rechnk()", chunk_v)
   # rechunk data ----
   if (rechunk && !is.null(indx) && chunk_i != indx$chunk_i) {
     imn <- min(c(dts_min, indx$mn))
@@ -51,7 +53,7 @@ sf_dta_chunkr_sub_rechnk <- function(
       ))
       w <- ipayipi::chunkr_sub_wr(dta_room = rechunk_room, write_tbl = wd,
         dta_sets = d, i_zeros = i_zeros, rit = indx$rit, ri = indx$ri,
-        overwrite = TRUE, xtra_v = xtra_v
+        overwrite = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
       )
       itx <- readRDS(file.path(rechunk_room, "aindxr"))
       itx$indx_tbl <- itx$indx_tbl[!indx %in% w$indx]

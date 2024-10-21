@@ -17,21 +17,23 @@
 #' @author Paul J Gordijn
 #' @details This function is an internal function called by others in the pipeline. Its main funciton is to standardise how data is chunked and maintain time-series data integrity. Chunking is done per a 'chunking index' that seperates data chunks by a date floor and ceiling. The index number serves as the identifier for a particular chunk. In addition to the chunk table index the overall min and max date-time of the data series is provided in an index list.
 sf_dta_chunkr <- function(
-    dta_room = NULL,
-    dta_sets = NULL,
-    tn = NULL,
-    rit = NULL,
-    ri = NULL,
-    chunk_i = NULL,
-    rechunk = FALSE,
-    buff_period = "50 years",
-    i_zeros = 5,
-    verbose = FALSE,
-    xtra_v = FALSE,
-    ...) {
+  dta_room = NULL,
+  dta_sets = NULL,
+  tn = NULL,
+  rit = NULL,
+  ri = NULL,
+  chunk_i = NULL,
+  rechunk = FALSE,
+  buff_period = "50 years",
+  i_zeros = 5,
+  verbose = FALSE,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
+  ...
+) {
   ":=" <- "." <- "%ilike%" <- "chnk_fl" <- "chnk_cl" <- "date_time" <-
     "nchnk_fl" <- "nchnk_cl" <- "d1" <- "d2" <- "dta_new" <- NULL
-  ipayipi::msg("sf_dta_chunkr()", xtra_v)
+  ipayipi::msg("sf_dta_chunkr()", chunk_v)
   # open file indx and setup ----
   if (file.exists(file.path(dta_room, "aindxr"))) {
     indx <- readRDS(file.path(dta_room, "aindxr"))
@@ -93,7 +95,7 @@ sf_dta_chunkr <- function(
     dts_min <- min(dttm)
     dts_max <- max(dttm)
     rm(dttm)
-    ipayipi::msg("Data sets evaluated ...", xtra_v)
+    ipayipi::msg("Data sets evaluated ...", chunk_v)
   }
 
   # get ri ----
@@ -103,7 +105,7 @@ sf_dta_chunkr <- function(
   ci <- ipayipi::sf_dta_chunkr_sub_ri(dta_room = dta_room, indx = indx,
     dta_sets = dta_sets, rit = rit, ri = ri, chunk_i = chunk_i, spchr = spchr,
     rechunk = rechunk, verbose = verbose, buff_period = buff_period,
-    xtra_v = xtra_v
+    xtra_v = xtra_v, chunk_v = chunk_v
   )
   chunk_i <- ci$chunk_i
   rit <- ci$rit
@@ -115,7 +117,7 @@ sf_dta_chunkr <- function(
   indx <- ipayipi::sf_dta_chunkr_sub_rechnk(
     dta_room = dta_room, dts_min = dts_min, dts_max = dts_max, indx = indx,
     chunk_i = chunk_i, rechunk = rechunk, buff_period = buff_period, i_zeros =
-      i_zeros, verbose = verbose, xtra_v = xtra_v
+      i_zeros, verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
 
   # add input data sets to chunk files ----
@@ -130,18 +132,18 @@ sf_dta_chunkr <- function(
 
   # make input datasets chunk index
   rtb <- ipayipi::chunkr_sub_it(dta_indx = TRUE, mn = dts_min, mx = dts_max,
-    buff_period = 0, chunk_i = chunk_i
+    buff_period = 0, chunk_i = chunk_i, chunk_v = chunk_v
   )
 
   # get or make main chunk index table
   it <- indx$indx_tbl
   if (is.null(it)) {
     it <- ipayipi::chunkr_sub_it(dta_indx = FALSE, mn = dts_min, mx = dts_max,
-      buff_period = buff_period, chunk_i = chunk_i
+      buff_period = buff_period, chunk_i = chunk_i, chunk_v = chunk_v
     )
   }
   # if the old index table date_time coverage is limited rename files
-  ipayipi::msg("Checking old index table ...", xtra_v)
+  ipayipi::msg("Checking old index table ...", chunk_v)
   imn <- min(c(dts_min, indx$mn))
   imx <- max(c(dts_max, indx$mx))
   c1 <- all(!is.null(indx), nrow(it) > 0)
@@ -154,7 +156,7 @@ sf_dta_chunkr <- function(
   }
   if (c2 || nrow(it) == 0) {
     nit <- ipayipi::chunkr_sub_it(dta_indx = FALSE, mn = imn, mx = imx,
-      chunk_i = chunk_i, buff_period = buff_period
+      chunk_i = chunk_i, buff_period = buff_period, chunk_v = chunk_v
     )
     if (nrow(it) > 0) {
       names(nit) <- c("nchnk_fl", "nchnk_cl", "nindx", "dta_new", "d1", "d2")
@@ -171,13 +173,13 @@ sf_dta_chunkr <- function(
     }
   }
   # chunk data sets
-  ipayipi::msg("Chunking data ...", xtra_v)
+  ipayipi::msg("Chunking data ...", chunk_v)
   wd <- it[dts_min < chnk_cl & dts_max > chnk_fl]
   if (ri %in% "discnt" && is.null(rit)) rit <- "event_based"
   if (is.null(rit)) rit <- "continuous"
   w <- ipayipi::chunkr_sub_wr(dta_room = dta_room, write_tbl = wd, dta_sets =
       dta_sets, i_zeros = i_zeros, ri = ri, rit = rit, overwrite = TRUE,
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
 
   it <- it[!indx %in% w$indx]
@@ -189,9 +191,9 @@ sf_dta_chunkr <- function(
     dta_n = dn
   )
   # inter-chunk time series check/fill ----
-  ipayipi::msg("Checking inter chunk ts integrity ...", xtra_v)
+  ipayipi::msg("Checking inter chunk ts integrity ...", chunk_v)
   w <- ipayipi::chunkr_inter_chk(dta_room = dta_room, indx = indx, i_zeros =
-      i_zeros, verbose = verbose, xtra_v
+      i_zeros, verbose = verbose, xtra_v, chunk_v = chunk_v
   )
   it <- it[!indx %in% w$indx]
   it <- rbind(it, w, fill = TRUE)

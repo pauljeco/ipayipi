@@ -7,5 +7,5 @@
 flag_all_equal(x, ...)
 }
 \description{
-Small function to flag range issues in 5 min wind speed data
+Small function to flag uniform windows
 }

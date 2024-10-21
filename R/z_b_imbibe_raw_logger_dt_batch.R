@@ -23,7 +23,6 @@
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
 #' @param verbose Logical passed to `attempt::attempt()` which reads the logger text file in with either `data.table::fread()` or base R.
 #' @param max_rows The number of rows to use when evaluating the record interval. Argument is parsed to `ipayipi::record_interval_eval()`.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on Linux.
 #' @details
 #'  In the pipeline structure this function should be used post `ipayipi::logger_data_import_batch()`. `ipayipi::imbibe_raw_batch()` is a wrapper for `ipayipi::imbibe_raw_logger_dt()` --- see this functions documentation for more details.
 #'

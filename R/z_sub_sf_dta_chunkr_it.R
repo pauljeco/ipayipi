@@ -14,14 +14,15 @@
 #' @details The buffer period around max and min dates of the data prevents frequent rechunking and indexing of data when new data is added that is beyond the limits of the dataset.
 #' @return A chunk index table.
 chunkr_sub_it <- function(
-    dta_indx = FALSE,
-    chunk_i = NULL,
-    mn = NULL,
-    mx = NULL,
-    buff_period = "50 years",
-    ri = NULL,
-    rit = NULL,
-    ...) {
+  dta_indx = FALSE,
+  chunk_i = NULL,
+  mn = NULL,
+  mx = NULL,
+  buff_period = "50 years",
+  ri = NULL,
+  rit = NULL,
+  ...
+) {
   ":=" <- "chnk_fl" <- "chnk_cl" <- "nchnk_fl" <- "nchnk_cl" <- NULL
 
   fi <- seq(from =

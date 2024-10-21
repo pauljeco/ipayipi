@@ -46,13 +46,6 @@ agg_param_eval <- function(
   "%ilike%" <- "agg_f" <- "measure" <- "phen_name" <- "stage" <-
     "phen_out_name" <- ":=" <- "table_name" <- "ppsid" <-
     "diff_secs" <- "var_type" <- NULL
-  # agg_offset = c("0 secs", "0 secs")
-  # all_phens = TRUE
-  # ignore_nas = FALSE
-  # agg_intervals = NULL # list of time intervals used to aggregate data
-  # agg_dt_suffix = "_agg" # suffix to use when naming the ourput agg tables
-  # agg_parameters = NULL # argument genereated using `agg_params` nested within `agg()`
-  # gaps = TRUE 
 
   d_args <- list(agg_intervals = NULL, agg_dt_suffix = "_agg",
     ignore_nas = FALSE, all_phens = TRUE, agg_offset = "0 secs",

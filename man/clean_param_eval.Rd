@@ -2,7 +2,7 @@
 % Please edit documentation in R/z_sub_dt_clean_param_eval.R
 \name{clean_param_eval}
 \alias{clean_param_eval}
-\title{Evaluate and prepare tables for joins}
+\title{Apply window filter functions to detect outlers and impute missing values.}
 \usage{
 clean_param_eval(
   clean_f = "hampel",
@@ -55,7 +55,7 @@ param sf}
 \item{xtra_v}{Logical. Whether or not to report xtra messages, progess, plus print data tables.}
 }
 \description{
-Flexible and fast joining of \code{ipayipi} data.
+The defult filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
 }
 \author{
 Paul J. Gordijn

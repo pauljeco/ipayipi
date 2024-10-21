@@ -16,7 +16,7 @@ meta_to_station(
   unwanted = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
-  keep_open = TRUE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -37,9 +37,9 @@ meta_to_station(
 
 \item{unwanted}{Similar to wanted, but keywords for filtering out unwanted stations.}
 
-\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
-
 \item{...}{Additional arguments passed to \code{ipayipi::dta_list()}.}
+
+\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
 }
 \value{
 Standardised data table of events.

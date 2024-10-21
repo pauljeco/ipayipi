@@ -13,7 +13,8 @@ Description: Functions that can be used to generate time series data
 Depends:
     R (>= 4.1.2),
     data.table,
-    future.apply
+    future.apply,
+    crayon
 Imports:
     attempt,
     circular,
@@ -21,7 +22,7 @@ Imports:
     devtools,
     dygraphs,
     future,
-    ggplot2,
+    ggplot2 (>= 3.5.0),
     lubridate,
     parallel,
     readxl,

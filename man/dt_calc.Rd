@@ -12,6 +12,7 @@ dt_calc(
   ppsij = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -29,6 +30,8 @@ dt_calc(
 \item{verbose}{Logical. Whether or not to report messages and progress.}
 
 \item{xtra_v}{Logical. Whether or not to report xtra messages, progess, plus print data tables.}
+
+\item{chunk_v}{Whether or not to indicate the start of data chunking.}
 }
 \value{
 A list containing the processed data sets 'dts_dt'.

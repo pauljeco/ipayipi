@@ -1,4 +1,4 @@
-#' @title Flag outliers and impute missing values.
+#' @title Apply filter windows to time series data
 #' @description Uses the non-parametric hampel filter to detect anomalies and impute values in a univariate series of numeric data.
 #' @param sfc  List of file paths to the temporary station file directory. Generated using `ipayipi::open_sf_con()`.
 #' @param station_file Name of the station being processed.
@@ -34,16 +34,29 @@ dt_clean <- function(
   last_rule = FALSE,
   tighten = 0.65,
   ppsij = NULL,
-  f_params = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
 
-  slist <- ipayipi::dta_list(input_dir = input_dir, recurr = recurr,
-    baros = FALSE, prompt = prompt, wanted = wanted, unwanted = unwanted,
-    file_ext = ".rds"
-  )
+  # set default args (f_params) from ppsij
+  #  - generate a table for this purpose
+  # determine how far back to reach when opening data
+  # open data
+  #  - filter bt start and end dttm
+  #  - check for phens
+  #  - subset data by phens
+  # loop through runs with froll
+  #  - generate outlier dt tbl for each sequential loop
+  #    this needs to be sequential where the next run depends on
+  #    a cleaned version of the last [do while]
+  # perform the tighten arg
+  # save data and outlier dt tbl
+
+  # 
+
+
 
   if (length(slist) == 0) {
     stop("No R data solonist files in the working directory")

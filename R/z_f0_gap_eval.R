@@ -48,19 +48,10 @@ gap_eval <- function(
   meta_events = "meta_events",
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   tbl_n = "^raw_*",
   ...
 ) {
-  # station_file <- "pipe_data_rainfall/mcp2/ipip_room/mcp_manz_office_rn.ipip"
-  # gap_problem_thresh_s = 6 * 60 * 60
-  # event_thresh_s = 10 * 60
-  # keep_open = TRUE
-  # meta_events = "meta_events"
-  # verbose = FALSE
-  # xtra_v = TRUE
-  # cores = 4
-  # tbl_n = "^raw_*"
-  # phen_eval = TRUE
 
   ":=" <- "%ilike%" <- ".N" <- NULL
   "dt_diff_s" <- "table_name" <- "start_dttm" <- "end_dttm" <- "dta_start" <-
@@ -71,7 +62,8 @@ gap_eval <- function(
 
   # open station connection
   sfc <- ipayipi::open_sf_con(pipe_house = pipe_house,
-    station_file = station_file, verbose = verbose, xtra_v = xtra_v
+    station_file = station_file, verbose = verbose, xtra_v = xtra_v,
+    chunk_v = chunk_v
   )
 
   # generate gap table for each raw data table from data_summary ----
@@ -185,11 +177,11 @@ gap_eval <- function(
   gaps <- gaps[, gid := seq_len(.N), by = table_name]
 
   # write gaps to temporary station file
-  ipayipi::msg("Chunking logger gap data", xtra_v)
+  ipayipi::msg("Chunking logger gap data", chunk_v)
   file.remove(sfc["gaps"], recursive = TRUE)
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   # refresh station connection
   sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file =
@@ -200,7 +192,7 @@ gap_eval <- function(
   # generate phen gaps summary ----
   # this gap summary should not overlap with the logger gap summary
   phen_gaps <- phen_gaps(pipe_house = pipe_house, station_file = station_file,
-    tbl_n = tbl_n, verbose = verbose, xtra_v = xtra_v,
+    tbl_n = tbl_n, verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v,
     gap_problem_thresh_s = gap_problem_thresh_s, phen_eval = phen_eval
   )
   gaps <- rbind(gaps, phen_gaps, use.names = TRUE, fill = TRUE)
@@ -208,10 +200,10 @@ gap_eval <- function(
 
   # write gaps to temporary station file
   file.remove(sfc["gaps"], recursive = TRUE)
-  ipayipi::msg("Chunking logger phen gap data", xtra_v)
+  ipayipi::msg("Chunking logger phen gap data", chunk_v)
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   # event data ----
   e <- ipayipi::sf_dta_read(sfc = sfc, tv = meta_events[1], tmp = TRUE,
@@ -399,10 +391,10 @@ gap_eval <- function(
     gaps <- gaps[, gid := seq_len(.N), by = "table_name"]
     # write gaps to temporary station file
     file.remove(sfc["gaps"], recursive = TRUE)
-    ipayipi::msg("Chunking event gap data", xtra_v)
+    ipayipi::msg("Chunking event gap data", chunk_v)
     ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
       dta = gaps, overwrite = TRUE, tn = "gaps",
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   }
   if (!keep_open) {

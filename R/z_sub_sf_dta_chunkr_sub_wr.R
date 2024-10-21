@@ -23,10 +23,11 @@ chunkr_sub_wr <- function(
   overwrite = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- "date_time" <- "indx" <- NULL
-  ipayipi::msg("chunkr_sub_wr()", xtra_v)
+  ipayipi::msg("chunkr_sub_wr()", chunk_v)
   dir.create(dta_room, showWarnings = FALSE, recursive = TRUE)
   # temp dir for chunking data before writing to the dta_room
   tmp_cdir <- tempfile(pattern = "cwrite")
@@ -95,7 +96,7 @@ chunkr_sub_wr <- function(
         ipayipi::msg(paste0(
           " Results from gaps in continuous data ... filled with NA\'s"
         ), verbose)
-        ipayipi::msg(dta_room, xtra_v)
+        ipayipi::msg(dta_room, chunk_v)
       }
       wi$n_pot <- nrow(dtsq)
     } else {

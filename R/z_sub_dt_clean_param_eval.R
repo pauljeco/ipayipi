@@ -1,5 +1,5 @@
-#' @title Evaluate and prepare tables for joins
-#' @description Flexible and fast joining of `ipayipi` data.
+#' @title Apply window filter functions to detect outlers and impute missing values.
+#' @description The defult filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
 #' @param clean_f Algorithm name. Currently only the non-linear "hampel" filter supported.
 #' @param phen_names List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.
 #' @param w_size Window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
@@ -37,16 +37,17 @@ clean_param_eval <- function(
   xtra_v = FALSE,
   ...
 ) {
+  "%ilike%" <- "%+%" <- NULL
+  "ppsid" <- "phen_name" <- "var_type" <- NULL
 
   # default data.tableish arguments
   d_args <- list(clean_f = "hampel", phen_names = "NULL", segs = NULL,
     seg_fuzz = NULL, seg_na_t = 0.75, w_size = 21, mad_dev = 3,
-    last_rule = FALSE, tighten = 0.65
+    tighten = 0.65
   )
   p_args <- list(station_file = "NULL", f_params = NULL, ppsij = "NULL",
     sfc = "NULL"
   )
-  #pda <- append(p_args, d_args)
 
   ## partial evaluation -----------------------------------------------------
   # check filter types
@@ -84,5 +85,46 @@ clean_param_eval <- function(
 
   ## full evaluation --------------------------------------------------------
   # get harvested table phens to check if the listed phens are recognised
-  
+  # phens
+  # rows to reach back based on windows
+  # function verify
+  # replace values
+  # highlight outliers
+
+  # flow
+  # get f params expressions from ppsij
+  # open station hsf f params
+
+  # f_params
+  # parse f_params to expressions -- each expression is a seperate run
+  # tht may have 'subruns' if multiple phen names are selected
+  z <- lapply(ppsij$f_params, function(x) {
+    eval(parse(text = sub("^~", "expression", x)))
+  })
+  names(z[[2]])
+
+  # read phens_dt ----
+  phens_dt <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
+  # filter oiut phens from other stages
+  phens_dt <- phens_dt[ppsid %ilike% paste0("^", ppsij$dt_n[1], "_")]
+
+  # match up phen names with those in existence
+  # only use phens that have variable type 'numeric'
+  z <- lapply(z, function(x) {
+    pn <- phens_dt[phen_name %ilike% x$phen_names][var_type %in% "num"]
+    if (nrow(pn) > 1) {
+      ipayipi::msg(x = paste0("Note multiple phen name matches. All will be ",
+        "\'cleaned\'. See matches below...", collapse = ""
+      ))
+      cat(paste0(crayon::magenta(x$phen_names, sep = ", ")), "\n")
+      print(x)
+      cat(crayon::magenta("Please refine the phen name search keys" %+%
+            " if necessary ..."
+        ), "\n"
+      )
+    }
+    x$phen_names <- pn$phen_name
+    return(x)
+  })
+  return(NULL)
 }

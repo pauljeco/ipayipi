@@ -94,7 +94,7 @@ imbibe_xml <- function(
   names(dtb) <- fds
   xle_li <- data.table::as.data.table(dtb)
 
-  # Logger header
+  # logger header ----
   xle_hi <- data.table::as.data.table(XML::xmlToDataFrame(
     xm[data_setup$instrument_info_tree],
     stringsAsFactors = FALSE
@@ -187,7 +187,7 @@ imbibe_xml <- function(
   data_summary <- data.table::data.table(
     dsid = as.integer(1),
     file_format = data_setup$file_format,
-    uz_station = xle_hi$project_id,
+    uz_station = paste0(xle_hi$location, "_", xle_hi$project_id),
     location = xle_hi$location,
     station = NA_character_,
     stnd_title = NA_character_,
