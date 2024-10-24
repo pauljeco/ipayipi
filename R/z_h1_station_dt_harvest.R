@@ -25,7 +25,7 @@ dt_harvest <- function(
     "gap_start" <- "gap_end" <- "gl2" <- "gi1" <- "gl1" <- "gi2" <-
     "gz_p" <- "p" <- "gz_gid" <- "gid" <- "gz_eid" <- "eid" <- "gz_gap_type" <-
     "gap_type" <- "gz_table_name" <- "gz_problem_gap" <- "problem_gap" <-
-    "gz_notes" <- "notes" <- "dt_diff_s" <- NULL
+    "gz_notes" <- "notes" <- "dt_diff_s" <- "phen_name" <- "phen_gap" <- NULL
 
   # harvest data from tables
   if (station_file == unique(f_params$hsf_station)[1]) {
@@ -165,7 +165,9 @@ dt_harvest <- function(
     h[[x]]$gaps <- gxg
     # save the data/index
     saveRDS(h[[x]], file.path(dirname(sfc)[1], paste0(ppsid, "_hsf_table_", x)))
-    ipayipi::msg("Harvested data link info", xtra_v)
+    ipayipi::msg(cat(
+      crayon::bgWhite(" Harvested data link info (column headers only) ...  ")
+    ), xtra_v)
     if (xtra_v) print(h[[x]]$indx$dta_n)
     return(x)
   })

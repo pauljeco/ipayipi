@@ -7,7 +7,7 @@
 clean_param_eval(
   clean_f = "hampel",
   phen_names = NULL,
-  segs = NULL,
+  seg_on = NA_character_,
   seg_fuzz = NULL,
   seg_na_t = 0.75,
   w_size = 21,
@@ -27,8 +27,6 @@ clean_param_eval(
 \item{clean_f}{Algorithm name. Currently only the non-linear "hampel" filter supported.}
 
 \item{phen_names}{List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.}
-
-\item{segs}{Vector of station data table names that contain timestamps used to slice data series into segments for independent outlier detection runs. If left \code{NULL} (default) the series is treated as one segment. A good option here is the 'logg_interfere' table. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
 
 \item{seg_fuzz}{String representing the threshold time interval between the list of segment date-time values. If two or more date-time values occur within this threshold time there corresponding values will be merged to the earliest date-time stamp. If left \code{NULL} \code{seg_fuzz} defaults to the record interval duration. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
 
@@ -53,6 +51,8 @@ param sf}
 \item{verbose}{Logical. Whether or not to report messages and progress.}
 
 \item{xtra_v}{Logical. Whether or not to report xtra messages, progess, plus print data tables.}
+
+\item{segs}{Vector of station data table names that contain timestamps used to slice data series into segments for independent outlier detection runs. If left \code{NULL} (default) the series is treated as one segment. A good option here is the 'logg_interfere' table. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
 }
 \description{
 The defult filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.

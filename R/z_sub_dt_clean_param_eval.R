@@ -22,7 +22,7 @@
 clean_param_eval <- function(
   clean_f = "hampel",
   phen_names = NULL,
-  segs = NULL,
+  seg_on = NA_character_,
   seg_fuzz = NULL,
   seg_na_t = 0.75,
   w_size = 21,
@@ -41,9 +41,9 @@ clean_param_eval <- function(
   "ppsid" <- "phen_name" <- "var_type" <- NULL
 
   # default data.tableish arguments
-  d_args <- list(clean_f = "hampel", phen_names = "NULL", segs = NULL,
-    seg_fuzz = NULL, seg_na_t = 0.75, w_size = 21, mad_dev = 3,
-    tighten = 0.65
+  d_args <- list(clean_f = "hampel", phen_names = "NULL",
+    seg_on = "NA_character", seg_fuzz = NULL, seg_na_t = 0.75,
+    w_size = 21, mad_dev = 3, tighten = 0.65
   )
   p_args <- list(station_file = "NULL", f_params = NULL, ppsij = "NULL",
     sfc = "NULL"
@@ -71,15 +71,21 @@ clean_param_eval <- function(
   names(args) <- names(d_args)
   if (is.vector(phen_names)) phen_names <- list(phen_names)
   if (is.vector(clean_f)) clean_f <- list(clean_f)
+  if (is.vector(seg_on)) seg_on <- list(seg_on)
   args <- data.table::as.data.table(args)
   if (!is.null(phen_names)) args$phen_names <- phen_names
+  if (!is.null(seg_on)) args$seg_on <- seg_on
   args$clean_f <- clean_f
   args <- lapply(seq_len(nrow(args)), function(i) as.expression(args[i]))
   args <- lapply(args, function(x) {
     x$phen_names <- unlist(x$phen_names)
     x$clean_f <- unlist(x$clean_f)
+    if ("seg_on" %in% names(x)) {
+      if (is.na(x$seg_on)) x$seg_on <- NULL
+    }
     return(x)
   })
+
   class(args) <- c(class(args), "dt_clean_params")
   if (!full_eval) return(args)
 

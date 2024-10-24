@@ -46,7 +46,7 @@ dt_process <- function(
 
   # open station file connection
   sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file,
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   if (!is.null(pipe_seq) && any(!"pipe_seq" %in% names(sfc),
         overwrite_pipe_memory
@@ -212,7 +212,7 @@ dt_process <- function(
       ppsij <- ppsi[dtp_n == j]
       f <- ppsij$f[1]
       fpm <- sf_dta_read(sfc = sfc, tv = "f_params")
-      if (!f %in% c("dt_calc", "dt_join")) {
+      if (!f %in% c("dt_calc", "dt_join", "dt_clean")) {
         f_params <- fpm[["f_params"]][[ff[[3]][ff[[1]] %in% f][[1]]]][
           ppsid == paste0(ppsi$dt_n[1], "_", j)
         ]

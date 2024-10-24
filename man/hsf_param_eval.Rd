@@ -21,6 +21,7 @@ hsf_param_eval(
   ppsij = NULL,
   sfc = NULL,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -45,7 +46,7 @@ hsf_param_eval(
 
 \item{single_out}{Forces through an interactive process the singling out of a harvest station. Useful for example where \code{ipayipi::dta_list()} returns from than one option.}
 
-\item{full_eval}{Defaults to \code{FALSE}.}
+\item{full_eval}{Defaults to \code{FALSE}. Evaluation is done 'fully' in \code{ipayipi::dt_process()} where a full phenomena description is developed for harvested phenomena.}
 
 \item{f_params}{For the partial evaluation multiple phenomena can be described using \code{ipayipi::agg_params()}. If left blank defaults will be used on all phenomena harvested.}
 

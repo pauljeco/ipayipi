@@ -4,42 +4,46 @@
 #' @param station_file Name of the station being processed.
 #' @param clean_f Algorithm name. Only "hampel" supported.
 #' @param phen_names Vector of the phenomena names that will be evaluated by the hampel filter. If NULL the function will not run.
+#' @param seg_on Name of column to segment filtering on. Cleaning within each data segment or slice will be run independently.
 #' @param w_size Window size for the hempel filter. Defaults to ten.
 #' @param mad_dev Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.
-#' @param segs Vector of station data table names which contain timestamps used to slice data series into segments with independent outlier detection runs. If left `NULL` (default) the run will be from the start to end of data being evaluated.
-#' @param seg_fuzz String representing the threshold time interval between the list of segment date-time 
-#' @param seg_na_t Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.
-#' @param last_rule Whether or not to reapply stored rules in the outlier rule column. TRUE will apply old rules.
-#' @param tighten Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor.
+#' @param segs Not yet implemented. Vector of station data table names which contain timestamps used to slice data series into segments with independent outlier detection runs. If left `NULL` (default) the run will be from the start to end of data being evaluated.
+#' @param seg_fuzz Not yet implemented. String representing the threshold time interval between the list of segment date-time 
+#' @param seg_na_t Not yet implemented. Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.
+#' @param last_rule Not yet implemented. Whether or not to reapply stored rules in the outlier rule column. TRUE will apply old rules.
+#' @param tighten Not yet implemented. Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor.
 #' @param ppsij Data processing `pipe_seq` table from which function parameters and data are extracted/evaluated. This is parsed to this function automatically by `ipayipi::dt_process()`.
 #' @param verbose Logical. Whether or not to report messages and progress.
 #' @param xtra_v Logical. Whether or not to report xtra messages, progess, plus print data tables.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on Linux.
-# #' @param check_segs Defaulted to FALSE. TRUE will display
-# #'  graphs showing the corrected versus raw data per segment.
-#' @keywords outlier detection, value interpolation, univariate data,
+#' @param chunk
+#' _v Logical. Print data chunking messages. Useful for debugging/digging into chunking methods.
+#' @keywords outlier detection, value imputation, univariate data,
 #' @export
 #' @author Paul J. Gordijn
-#' @return A vector of xle file paths.
 dt_clean <- function(
   sfc = NULL,
   station_file = NULL,
+  station_file_ext = ".ipip",
   clean_f = "hampel",
   phen_names = NULL,
+  seg_on = NULL,
   w_size = 21,
   mad_dev = 3,
-  segs = NULL,
-  seg_fuzz = NULL,
-  seg_na_t = 0.75,
-  last_rule = FALSE,
-  tighten = 0.65,
+  # segs = NULL,
+  # seg_fuzz = NULL,
+  # seg_na_t = 0.75,
+  # last_rule = FALSE,
+  # tighten = 0.65,
   ppsij = NULL,
+  f_params = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
   chunk_v = FALSE,
   ...
 ) {
 
+  "%ilike%" <- ":=" <- NULL
+  "table_name" <- "flag" <- NULL
   # set default args (f_params) from ppsij
   #  - generate a table for this purpose
   # determine how far back to reach when opening data
@@ -54,19 +58,73 @@ dt_clean <- function(
   # perform the tighten arg
   # save data and outlier dt tbl
 
-  # 
-
-
-
-  if (length(slist) == 0) {
-    stop("No R data solonist files in the working directory")
+  # prep data read ----
+  sfcn <- names(sfc)
+  dta_in <- NULL
+  hsf_dta <- NULL
+  if ("dt_working" %in% sfcn) {
+    dta_in <- sf_dta_read(sfc = sfc, tv = "dt_working")
+    ng <- sf_dta_read(sfc = sfc, tv = "gaps")[["gaps"]][
+      table_name %in% ppsij$output_dt[1]
+    ]
   }
-  cr_msg <- padr(core_message = paste0(" non-linear anomaly detection ",
-      "and interpolation ", collapse = ""
-    ), pad_char = "=", wdth = 80, pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  message(cr_msg)
+
+  if (is.null(dta_in) && any(sfcn %ilike% "_hsf_table_")) {
+    pstep <- paste0("^", ppsij$dt_n[1], "_.+_hsf_table_")
+    hsf_dta <- sfcn[sfcn %ilike% pstep]
+    hsf_dta <- hsf_dta[length(hsf_dta)]
+    dta_in <- sf_dta_read(sfc = sfc, tv = hsf_dta)
+    ng <- dta_in[[1]]$gaps
+    ng$table_name <- ppsij$output_dt[1]
+  }
+
+  # eindx filter
+  # *need to build in an extra filter for moving the window back
+  dta_in <- dt_dta_filter(dta_link = dta_in, ppsij = ppsij)
+
+  # prep clean args ----
+  z_default <- data.table::data.table(table_name = NA_character_,
+    phen_names = NA_character_, seg_on = NULL, mad_dev = mad_dev,
+    w_size = NA_integer_, clean_f = NA_character_
+  )[0]
+  z <- lapply(f_params, function(x) {
+    x <- eval(parse(text = sub("^~", "data.table::data.table", x)))
+    x
+  })
+  z <- rbind(z_default, data.table::rbindlist(z), fill = TRUE)[
+    order(phen_names)
+  ]
+  z$table_name <- ppsij$output_dt
+  z$mad_dev <- data.table::fifelse(is.na(z$mad_dev), mad_dev, z$mad_dev)
+  p <- c("date_time", z$phen_names)
+  z <- split.data.frame(z, f = factor(z$phen_names))
+
+  # open data ----
+  dt <- dt_dta_open(dta_link = dta_in[[1]])
+  dt <- subset(dt, select = unique(p))
+  ipayipi::msg(cat(crayon::bgWhite(" Pre-clean data -- head  ")), xtra_v)
+  if (xtra_v) print(head(dt))
+
+  # run filters ----
+  lapply(z, function(zx) {
+    sqrw <- 1
+    phenx <- zx$phen_names[1]
+    # prep segments from column of dates joined to agg data
+    # - join dates
+    # - sequential ordering of data
+    while (sqrw <= nrow(zx)) {
+      # run hampel filter
+      dt <- dt[, flag := data.table::frollapply(phenx,
+        FUN = function(x) {
+          hampel(x, w_width = zx$w_size[sqrw], x_devs = zx$mad_dev[sqrw])
+        }, n = zx$w_size[sqrw]
+      ), env = list(phenx = phenx)]
+      # cushion edges
+      # generate summary table
+      # replace values if option is specified
+      sqrw <- sqrw + 1
+    }
+  })
   emmasf <- sapply(slist, FUN = function(emm) {
     ### Function inputs
     emma <- sub(x = emm, pattern = ".rds", replacement = "")

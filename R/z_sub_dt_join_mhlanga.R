@@ -68,12 +68,13 @@ mhlanga <- function(
   phen_dt = NULL,
   over_right = FALSE,
   station = NULL,
+  xtra_v = FALSE,
   ...
 ) {
   "%ilike%" <- NULL
 
-  x_tbl <- data.table::setDT(x_tbl)
-  y_tbl <- data.table::setDT(y_tbl)
+  x_tbl <- data.table::as.data.table(x_tbl)
+  y_tbl <- data.table::as.data.table(y_tbl)
 
   # time_seq prep ----
   if (is.null(time_seq)) time_seq <- FALSE
@@ -132,13 +133,20 @@ mhlanga <- function(
 
   # add preffix to duplicate column names in y_tbl
   if (join %in% c("left_join", "right_join")) {
-    names(y_tbl)[names(y_tbl) %in% names(x_tbl)] <-
-      paste0("ydt_", names(y_tbl)[names(y_tbl) %in% names(x_tbl)])
+    names(y_tbl)[
+      names(y_tbl) %in% names(x_tbl) &
+        !names(y_tbl) %in% c(y_key[1], y_key[2])[!is.na(c(y_key[1], y_key[2]))]
+    ] <- paste0("ydt_", names(y_tbl)[
+      names(y_tbl) %in% names(x_tbl) &
+        !names(y_tbl) %in% c(y_key[1], y_key[2])[!is.na(c(y_key[1], y_key[2]))]
+    ])
   }
 
   # left_join ----
   if (join == "left_join") {
     dsyn <- paste0("y_tbl[x_tbl", on, "]", collapse = "")
+    ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
+    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
     xy <- xy[, names(xy)[!names(xy) %in% c("xd1", "xd2")], with = FALSE]
     xy <- xy[, c(names(x_tbl)[names(x_tbl) %in% names(xy)], names(y_tbl)),
@@ -149,12 +157,16 @@ mhlanga <- function(
   # right join ----
   if (join == "right_join") {
     dsyn <- paste0("x_tbl[y_tbl", on, "]", collapse = "")
+    ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
+    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
   }
 
   # inner_join ----
   if (join == "inner_join") {
     dsyn <- paste0(dsyn, " , nomatch=", "NULL", collapse = "")
+    ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
+    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
   }
 
@@ -162,6 +174,11 @@ mhlanga <- function(
   if (join == "full_join" && !any(time_seq[1], time_seq[2])) {
     x_key <- names(x_tbl)[names(x_tbl) %ilike% x_key[1]][1]
     y_key <- names(y_tbl)[names(y_tbl) %ilike% y_key[1]][1]
+    j_txt <- cat("dt = merge(x = x_tbl, y = y_tbl, all = TRUE, by.x = ",
+      x_key, ", by.y = ", y_key, ")", sep = ""
+    )
+    ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
+    ipayipi::msg(cat(crayon::silver(j_txt), sep = "\n "), xtra_v)
     xy <- merge(x = x_tbl, y = y_tbl, all = TRUE, by.x = x_key, by.y = y_key)
 
     # clean up duplicate names and cover over x table NA values

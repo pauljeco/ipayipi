@@ -52,13 +52,15 @@ dt_calc <- function(
     paste(dirname(station_file), station_file_ext, "/", sep = "|"),
     "", station_file
   )
-  ipayipi::msg(crayon::bgWhite(paste0("Calc station: ", station)), xtra_v)
+  ipayipi::msg(crayon::bgWhite(paste0(" Calc station:  ", station, " ")),
+    xtra_v
+  )
 
   # eindx filter
   dta_in <- dt_dta_filter(dta_link = dta_in, ppsij = ppsij)
   # open data ----
   dt <- dt_dta_open(dta_link = dta_in[[1]])
-  ipayipi::msg("Pre-calc data", chunk_v)
+  ipayipi::msg(cat(crayon::bgWhite(" Pre-calc data ")), xtra_v)
   if (xtra_v) print(head(dt))
 
   # organise f_params ----
@@ -98,16 +100,25 @@ dt_calc <- function(
   eval_f <- function(fx) {
     attempt::try_catch(eval(parse(text = paste0(fx, collapse = ""))))
   }
+  ipayipi::msg(cat(crayon::bgWhite(" Calc data.table syntax: ")), xtra_v)
+  ipayipi::msg(cat(crayon::silver(f_params), sep = "\n "), xtra_v)
   dte <- list(attempt::attempt(eval_f(f_params), silent = TRUE))
   if (attempt::is_try_error(dte[[1]])) {
     err <- dte[[1]][1]
     known_err <- "only 0's may be mixed with negative subscripts"
     if (!err %ilike% known_err && xtra_v && nrow(dt) > 0) print(dte[[1]][1])
+    if (err %ilike% " not found" && xtra_v) {
+      message(cat(crayon::blue("Error may be due to an attempt to perform "),
+        crayon::blue("an operation on a variable/phen\n introduced in chain"),
+        crayon::blue(", begin a new \'calc\' step to work on the new phen."),
+        "\n", sep = ""
+      ))
+    }
     dte <- list(NULL)
   }
   dt_working <- dte
   names(dt_working) <- "dt_working"
-  ipayipi::msg("Post-calc data", xtra_v)
+  ipayipi::msg(cat(crayon::bgWhite(" Post-calc data : ")), xtra_v)
   if (xtra_v) print(head(dt_working[["dt_working"]]))
 
   # gap info ----

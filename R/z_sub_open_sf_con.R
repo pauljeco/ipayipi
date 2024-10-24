@@ -26,9 +26,10 @@ open_sf_con <- function(
   verbose = FALSE,
   tv = NULL,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
-  "%ilike%" <- "table_name" <- NULL
+  "%ilike%" <- "table_name" <- "%+%" <- NULL
   if (!is.null(pipe_house)) {
     sf_dir <- dirname(station_file)
     sf_dir <- sub("^\\.", "", sf_dir)
@@ -41,7 +42,9 @@ open_sf_con <- function(
   }
 
   if (!file.exists(station_file) && !is.null(pipe_house)) {
-    ipayipi::msg("Error: no station file detected!", verbose = xtra_v)
+    ipayipi::msg(cat(crayon::yellow("Error: no station file detected!")),
+      xtra_v
+    )
     return(NULL)
   }
 
@@ -57,7 +60,9 @@ open_sf_con <- function(
     sfn <- names(readRDS(station_file))
     if (!is.null(tv)) sfn <- sfn[sfn %ilike% tv]
     lapply(sfn, function(x) {
-      ipayipi::msg(paste0("Extracting: ", station_file, ": ", x), xtra_v)
+      ipayipi::msg(cat(crayon::yellow(
+        "Extracting: " %+% station_file %+% ": " %+% x
+      )), xtra_v)
       sfx <- readRDS(station_file)[[x]]
       # chunk data ----
       ds <- NULL
@@ -77,7 +82,7 @@ open_sf_con <- function(
       }
       s <- ipayipi::sf_dta_wr(dta_room = file.path(sf_tmp, x),
         dta = sfx, tn = x, rit = rit, ri = ri, verbose = verbose,
-        overwrite = TRUE, xtra_v = xtra_v
+        overwrite = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
       )
       invisible(file.path(sf_tmp, x))
     })

@@ -32,10 +32,11 @@ sf_dta_wr <- function(
     i_zeros = 5,
     verbose = TRUE,
     xtra_v = FALSE,
+    chunk_v = FALSE,
     ...) {
   "%ilike%" <- "table_name" <- NULL
 
-  ipayipi::msg("sf_dta_wr()", xtra_v)
+  ipayipi::msg(cat(crayon::yellow("sf_dta_wr()")), chunk_v)
   # check args ----
   # required: tn, dta, dta_room
   if (is.null(dta) || "function" %in% class(dta)) return(TRUE)
@@ -45,7 +46,7 @@ sf_dta_wr <- function(
     msg <- paste0("Null args provided to sf_dta_wr(): ",
       paste(names(a_args), collapse = ", "), "."
     )
-    ipayipi::msg(msg, verbose)
+    ipayipi::msg(cat(crayon::yellow(msg)), chunk_v)
   }
   if ("f_params" %in% class(dta)) {
     saveRDS(dta, dta_room)
@@ -53,7 +54,7 @@ sf_dta_wr <- function(
   }
   if (!data.table::is.data.table(dta)) {
     msg <- paste0("sf_dta_wr() requires data.table input dta")
-    ipayipi::msg(msg, verbose)
+    ipayipi::msg(cat(crayon::yellow(msg)), chunk_v)
   }
 
   # organise data columns ----
@@ -96,7 +97,7 @@ sf_dta_wr <- function(
     ipayipi::sf_dta_chunkr(dta_room = dta_room, chunk_i = NULL,
       rechunk = FALSE, i_zeros = i_zeros, dta_sets = list(dta), tn = tn,
       rit = rit, ri = ri, overwrite = overwrite, verbose =
-        verbose, xtra_v = xtra_v
+        verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
     m <- paste0(tn, ": Data chunked")
     s <- TRUE
@@ -121,6 +122,6 @@ sf_dta_wr <- function(
     m <- paste0(tn, ": Data saved as single RDS.")
     s <- TRUE
   }
-  if (s) ipayipi::msg(m, xtra_v)
+  if (s) ipayipi::msg(cat(crayon::yellow(m)), chunk_v)
   return(s)
 }

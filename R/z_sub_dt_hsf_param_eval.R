@@ -1,6 +1,6 @@
 #' @title 'dt' processing pipeline: generate data harvest criteria
 #' @description Sets up a data harvest from a desired station file.
-#' @param full_eval Defaults to `FALSE`.
+#' @param full_eval Defaults to `FALSE`. Evaluation is done 'fully' in `ipayipi::dt_process()` where a full phenomena description is developed for harvested phenomena.
 #' @param station_file *The path and name of the main station to which data is being harvested.
 #' @param hsf_station *The path and name of the station, or a keyword, to search for the station from which data will be harvested. _If `NA` the `hsf_station` is set to `station_file`, i.e., data will be harvested from the `station_file`._ If a string is provided the function will search for a matching station during full evaluation (`eval_full` set to TRUE`).
 #' @param harvest_dir *The directory in which to search for the `hsf_station`.
@@ -35,11 +35,12 @@ hsf_param_eval <- function(
   ppsij = NULL,
   sfc = NULL,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
-  "%ilike%" <- "phen_name" <- "table_name" <- "input_dt" <- "phen_syn" <-
-    "dfft_diff" <- "dt_n" <- "dtp_n" <- "decis" <- "output_dt" <-
-    "dfft_secs" <- "orig_table_name" <- ":=" <- "dt_record_interval" <- NULL
+  "%+%" <- "%ilike%" <- ":=" <- NULL
+  "phen_name" <- "table_name" <- "input_dt" <- "phen_syn" <- "dt_n" <-
+    "dtp_n" <- "output_dt" <- "orig_table_name" <- "dt_record_interval" <- NULL
 
   ## partial function evaluation ----------------------------------------------
   #  returns shorter hsf_param list
@@ -113,7 +114,7 @@ hsf_param_eval <- function(
     }
 
     p <- NULL
-    # extract from raw data phen table
+    # extract from raw data phen table ('phens')
     if (hsf_table %ilike% "raw") {
       p <- phen_tabs$phens[table_name %ilike% "raw",
         c("phid", "phen_name", "units", "measure", "var_type", "table_name")
@@ -127,7 +128,22 @@ hsf_param_eval <- function(
       )
     }
 
-    # extract from other source
+    # extract from processed data phen table ('phens_dt')
+    # if (all(!hsf_table %ilike% "raw",
+    #   hsf_table %in% phen_tabs$phens_dt$table_name
+    # )) {
+    #   p <- phen_tabs$phens_dt[table_name %ilike% hsf_table,
+    #     c("phid", "phen_name", "units", "measure", "var_type", "table_name")
+    #   ]
+    #   # get data summary info
+    #   s <- unique(
+    #     hsf_summary$data_summary[
+    #       table_name %in% unique(p$table_name)
+    #     ], by = "table_name"
+    #   )
+    # }
+
+    # generate own phen table
     if (!any(sapply(phen_tabs, function(x) any(x$table_name %in% hsf_table))) &&
         hsf_table != "raw"
     ) {
@@ -180,14 +196,23 @@ hsf_param_eval <- function(
       s <- cbind(s, sx)
       p <- merge(x = p, y = s, all.y = TRUE, by = "table_name")
     }
-    # extract from processed data phen table ('dt_')
-    if (hsf_table %ilike% "dt_" && "phens_dt" %in% names(sfc) && is.null(p)) {
-      p <- phen_tabs$phens_dt[table_name %ilike% "dt_"]
+    # extract from processed data phen table
+    if ("phens_dt" %in% names(sfc) && is.null(p)) {
+      p <- phen_tabs$phens_dt
       p <- p[table_name == hsf_table]
       # check aggregation interval
       p <- p[, ":="(record_interval = dt_record_interval)]
     }
 
+    if (is.null(p)) {
+      message(cat(crayon::red("Harvested phenomena details not developed! \n")))
+      message(cat(crayon::blue(
+        "Phenomena details are extracted from: \n" %+%
+          " - the \'phens'\ table if the harvest table name is == \'raw\'" %+%
+          "\n" %+% " - the \'phens_dt\' table if the harvested table has" %+%
+          " the preffix \'dt_\', or \n - are constructed through evaluation."
+      )))
+    }
     ## phen aggregation interval options ----
     # add record interval to p to organise aggregation intervals and phenomena
     # selection

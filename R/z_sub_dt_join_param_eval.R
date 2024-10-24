@@ -3,8 +3,8 @@
 #' @param x_tbl The name of the 'x' or left table in the merge/join. This
 #'  defaults to the working data table, and therefore, this argument need not be supplied.
 #' @param y_tbl Argument must be supplied. Name of the 'y' or right table.
-#' @param x_key Column name. If not provided, defaults to "date_time".
-#' @param y_key Column name. Similar to `x_key` if not provided.
+#' @param x_key Column name. If not provided, defaults to "date_time". __See note on x and y key names for left and right joins below.
+#' @param y_key Column name. Similar to `x_key` if not provided. * For left and right (equi) joins the syntax only functions if x and y key names are like.
 #' @param time_seq If `TRUE` then a continuous sequence of date-time values are ensured for both _x_ and _y_ tables. If a vector of two logial values is provided then this is applied to _x_ and _y_ tables seperately, in that order, and the final joined table.
 #' @param fuzzy String or logical. If string, this argument is evaluated to determine the fuzzy interval used to ...
 #' param full_eval

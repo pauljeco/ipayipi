@@ -121,7 +121,7 @@ p_step <- function(
   ]
   f_params_clean <- unlist(f_params_clean, recursive = FALSE)
   f_params_clean <- lapply(f_params_clean, function(x) {
-    x <- deparse(x, control = "niceNames")
+    x <- deparse(x, control = "niceNames", width.cutoff = 500L)
     x <- sub("^expression['(']", "~(", x)
     x
   })

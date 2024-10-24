@@ -25,6 +25,7 @@ dt_join(
   sfc = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }

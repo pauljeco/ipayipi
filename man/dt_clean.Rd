@@ -2,24 +2,22 @@
 % Please edit documentation in R/z_h1_station_dt_clean.R
 \name{dt_clean}
 \alias{dt_clean}
-\title{Flag outliers and impute missing values.}
+\title{Apply filter windows to time series data}
 \usage{
 dt_clean(
   sfc = NULL,
   station_file = NULL,
+  station_file_ext = ".ipip",
   clean_f = "hampel",
   phen_names = NULL,
+  seg_on = NULL,
   w_size = 21,
   mad_dev = 3,
-  segs = NULL,
-  seg_fuzz = NULL,
-  seg_na_t = 0.75,
-  last_rule = FALSE,
-  tighten = 0.65,
   ppsij = NULL,
   f_params = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -32,19 +30,11 @@ dt_clean(
 
 \item{phen_names}{Vector of the phenomena names that will be evaluated by the hampel filter. If NULL the function will not run.}
 
+\item{seg_on}{Name of column to segment filtering on. Cleaning within each data segment or slice will be run independently.}
+
 \item{w_size}{Window size for the hempel filter. Defaults to ten.}
 
 \item{mad_dev}{Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.}
-
-\item{segs}{Vector of station data table names which contain timestamps used to slice data series into segments with independent outlier detection runs. If left \code{NULL} (default) the run will be from the start to end of data being evaluated.}
-
-\item{seg_fuzz}{String representing the threshold time interval between the list of segment date-time}
-
-\item{seg_na_t}{Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.}
-
-\item{last_rule}{Whether or not to reapply stored rules in the outlier rule column. TRUE will apply old rules.}
-
-\item{tighten}{Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor.}
 
 \item{ppsij}{Data processing \code{pipe_seq} table from which function parameters and data are extracted/evaluated. This is parsed to this function automatically by \code{ipayipi::dt_process()}.}
 
@@ -52,10 +42,17 @@ dt_clean(
 
 \item{xtra_v}{Logical. Whether or not to report xtra messages, progess, plus print data tables.}
 
-\item{cores}{Number of CPU's to use for processing in parallel. Only applies when working on Linux.}
-}
-\value{
-A vector of xle file paths.
+\item{segs}{Not yet implemented. Vector of station data table names which contain timestamps used to slice data series into segments with independent outlier detection runs. If left \code{NULL} (default) the run will be from the start to end of data being evaluated.}
+
+\item{seg_fuzz}{Not yet implemented. String representing the threshold time interval between the list of segment date-time}
+
+\item{seg_na_t}{Not yet implemented. Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.}
+
+\item{last_rule}{Not yet implemented. Whether or not to reapply stored rules in the outlier rule column. TRUE will apply old rules.}
+
+\item{tighten}{Not yet implemented. Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor.}
+
+\item{chunk}{_v Logical. Print data chunking messages. Useful for debugging/digging into chunking methods.}
 }
 \description{
 Uses the non-parametric hampel filter to detect anomalies and impute values in a univariate series of numeric data.
@@ -65,7 +62,7 @@ Paul J. Gordijn
 }
 \keyword{data,}
 \keyword{detection,}
-\keyword{interpolation,}
+\keyword{imputation,}
 \keyword{outlier}
 \keyword{univariate}
 \keyword{value}
