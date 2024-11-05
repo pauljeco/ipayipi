@@ -6,6 +6,20 @@
 \usage{
 flag_all_equal(x, ignore = NULL, ...)
 }
+\arguments{
+\item{x}{Vector of numeric values to evaluate.}
+
+\item{ignore}{Numeric vector with values to ignore from all equal test.}
+}
+\value{
+Logical TRUE for all values tested being identical and FALSE when there are multiple unique values in \code{x}.
+}
 \description{
 Small function to flag uniform windows
+}
+\details{
+Vectors are ignored if NA values are detected. One can choose to ignore certain numeric values provided to the \code{ignore} argument. These are removed from \code{x} if present and the test is only performed if the length of the vector after ignoring values is 95\% of the original \code{x}'s length.
+}
+\author{
+Paul J. Gordijn
 }

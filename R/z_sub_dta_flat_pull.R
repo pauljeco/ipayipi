@@ -168,10 +168,10 @@ dta_flat_pull <- function(
     )
     return(dti)
   })
-  names(dti) <- gsub(paste0(file_ext, "$"), "", basename(names(t)))
   dtdta <- lapply(
     dti, function(q) subset(q, select = -c(date_time, problem_gap))
   )
+  names(dti) <- gsub(paste0(file_ext, "$"), "", basename(names(t)))
   dtgap <- lapply(seq_along(dti), function(qi) {
     q <- subset(dti[[qi]], select = c(problem_gap))
     data.table::setnames(q, "problem_gap", names(dti)[qi])
