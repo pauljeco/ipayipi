@@ -34,9 +34,9 @@ defaults to the working data table, and therefore, this argument need not be sup
 
 \item{y_tbl}{Argument must be supplied. Name of the 'y' or right table.}
 
-\item{x_key}{Column name. If not provided, defaults to "date_time".}
+\item{x_key}{Column name. If not provided, defaults to "date_time". __See note on x and y key names for left and right joins below.}
 
-\item{y_key}{Column name. Similar to \code{x_key} if not provided.}
+\item{y_key}{Column name. Similar to \code{x_key} if not provided. * For left and right (equi) joins the syntax only functions if x and y key names are like.}
 
 \item{time_seq}{If \code{TRUE} then a continuous sequence of date-time values are ensured for both \emph{x} and \emph{y} tables. If a vector of two logial values is provided then this is applied to \emph{x} and \emph{y} tables seperately, in that order, and the final joined table.}
 

@@ -32,11 +32,11 @@ dta_availability <- function(
   end_dttm = NULL,
   tbl_names = NULL,
   meta_events = "meta_events",
-  verbose = FALSE,
   wanted = NULL,
   unwanted = NULL,
   recurr = TRUE,
   prompt = FALSE,
+  verbose = FALSE,
   xtra_v = FALSE,
   ...
 ) {
@@ -66,8 +66,9 @@ dta_availability <- function(
   # check if the plot tbls are present
   sedta <- lapply(seq_along(slist), function(i) {
     ds <- sf_dta_read(pipe_house = pipe_house, tv = "data_summary",
-      station_file = slist[i], tmp = TRUE
+      station_file = slist[i], tmp = TRUE, xtra_v = xtra_v
     )[["data_summary"]]
+    if (is.null(ds)) return(NULL)
     ds <- ds[, c("start_dttm", "end_dttm", "stnd_title", "table_name")]
     tbl <- unique(ds$table_name)
     # select tbl based on ordering of tbl_names
@@ -76,7 +77,8 @@ dta_availability <- function(
       tbln <- tbl_names[tbl_names %chin% tbl]
       tbl <- tbl[order(tbln)][1]
     }
-    ds <- ds[table_name %chin% tbl]
+    if (any(sapply(tbl, is.na))) return(NULL)
+    ds <- ds[table_name %chin% c(tbl)]
     if (nrow(ds) == 0) return(NULL)
     return(ds)
   })

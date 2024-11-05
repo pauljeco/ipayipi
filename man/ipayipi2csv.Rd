@@ -15,6 +15,8 @@ ipayipi2csv(
   unwanted = NULL,
   baros = FALSE,
   recurr = TRUE,
+  verbose = FALSE,
+  xtra_v = FALSE,
   ...
 )
 }

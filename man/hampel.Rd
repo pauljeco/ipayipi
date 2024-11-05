@@ -6,8 +6,8 @@
 \usage{
 hampel(
   x = NULL,
-  w_width = 21,
-  x_devs = 3,
+  w = 21,
+  d = 3,
   na_t = 1,
   tighten = 1,
   robust = TRUE,
@@ -18,9 +18,11 @@ hampel(
 \arguments{
 \item{x}{Values on which to perform the hampel filter evaluation.}
 
-\item{x_devs}{The number of deviations from the central tendacy of the window used to detect outlier values.}
-
 \item{robust}{If FALSE the mean is used for interpolation instead of the median value.}
+
+\item{w_width}{Total width of the filter window.}
+
+\item{x_devs}{The number of deviations from the central tendacy of the window used to detect outlier values.}
 }
 \description{
 Applies the non-linear hampel filter to elements of a vector. The hampel is used to detect ourliers and produce estimates for imputation.

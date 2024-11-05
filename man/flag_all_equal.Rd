@@ -4,7 +4,7 @@
 \alias{flag_all_equal}
 \title{flag all equal}
 \usage{
-flag_all_equal(x, ...)
+flag_all_equal(x, ignore = NULL, ...)
 }
 \description{
 Small function to flag uniform windows

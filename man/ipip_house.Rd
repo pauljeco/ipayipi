@@ -14,16 +14,17 @@ ipip_house(
   dta_out = NULL,
   reports = NULL,
   raw_room = NULL,
-  sf_con = TRUE,
   ...
 )
 }
 \arguments{
-\item{work_dir}{The working directory/'room' (or folder) in which all pipeline rooms are 'housed'.
+\item{work_dir}{The working directory/'room' (or folder) in which all pipeline rooms are 'housed'. \bold{NB!} The working directory is relative to the console/terminal working directory, or the full path name.
 \cr \cr}
 
-\item{r}{Directory for miscellaneous scripts.
-The data is moved through an 'ipayipi' pipeline housing system through the following rooms.}
+\item{r}{Directory for miscellaneous scripts. Within the 'r' room, a sub directory is created called 'pipe_seq' for housing processing pipeline sequence scripts for \code{ipayipi::dt_process()}.
+The data is moved through an 'ipayipi' pipeline housing system through the following rooms.
+\cr \cr
+Data moves through an 'ipayipi' pipeline through the following rooms 1--4. Along the way raw data is organised and archived, and data is standardised before being processed. \cr}
 
 \item{source_room}{\strong{1}. 'Room' from which raw-data files are imported. If left \code{NULL} a 'source_room' will be created in the pipe_house working directory.}
 
@@ -33,15 +34,17 @@ The data is moved through an 'ipayipi' pipeline housing system through the follo
 
 \item{ipip_room}{\strong{4}. 'Room' where 'station files' are housed. Station files consist of appended, standardised raw-data files---pulled from the \code{nomvet_room}---that have been, or are ready for further processing.}
 
-\item{raw_room}{'Room' wherein raw-data files from the \code{source_room} are systematically archived. If this is set to \code{NULL} then raw-data files will not be archived by 'ipayipi'.}
+\item{dta_out}{Used for housing select pipeline data products typically in 'csv' file format.}
 
-\item{full}{If \code{TRUE} additonal folders in the working directory will be generated for 1)}
+\item{reports}{Typically used to house 'rmarkdown' reports used for inspection and analysis of data.}
+
+\item{raw_room}{'Room' wherein raw-data files from the \code{source_room} are systematically archived. If this is set to \code{NULL} then raw-data files will not be archived by 'ipayipi'.}
 }
 \value{
 List of pipeline housing 'rooms' (filepaths).
 }
 \description{
-Compiles/creates a list of 'rooms' (folders/directories) required for an 'ipayipi' data-processing pipeline.
+Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline.
 }
 \details{
 This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below. The preffix to the folders created represents this flow of data.

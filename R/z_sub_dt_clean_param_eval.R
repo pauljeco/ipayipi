@@ -1,33 +1,37 @@
-#' @title Apply window filter functions to detect outlers and impute missing values.
-#' @description The defult filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
-#' @param clean_f Algorithm name. Currently only the non-linear "hampel" filter supported.
-#' @param phen_names List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.
-#' @param w_size Window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
-#' @param mad_dev Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
-#' @param segs Vector of station data table names that contain timestamps used to slice data series into segments for independent outlier detection runs. If left `NULL` (default) the series is treated as one segment. A good option here is the 'logg_interfere' table. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
-#' @param seg_fuzz String representing the threshold time interval between the list of segment date-time values. If two or more date-time values occur within this threshold time there corresponding values will be merged to the earliest date-time stamp. If left `NULL` `seg_fuzz` defaults to the record interval duration. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
-#' @param seg_na_t Fractional tolerace of the count of NA values within a window for interpolation of missing values. If the number of NAs exceeds the threshold, filtering will not be performed. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
+#' @title Evaluate arguments for pipeline univariate filter.
+#' @description The default filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
+#' @param phens List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.
+#' @param w Total window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
+#' @param mad Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
+#' @param align One of the following character options following 'data.table' lateral syntax framework: 1) \bold{'right'} (the default) evaluates the current value, on the right, based on preceeding values, falling to the left; option \bold{'left'} does the opposite evaluting the values to the right; option \bold{centre} places the evauated value in middle of the total window size provided by \bold{w} (option 'centre' is 'left' biased for odd window sizes). This argument is parsed to 'data.table' `frollapply`.
+#' @param cush Logical indicating whether to prevent NAs at data start and end dates owing to window/filter alignment. `TRUE` will \bold{cush}ion data start and ends where necessary by adjust window alignment properties (within segments). `FALSE` does not prevent NA values.
+#' @param seg Vector of station data table names that contain values that will be used to slice data series into segments for independent outlier detection runs. Values don't have to correspond to segment numbers---segments are orgaised within this function. If `NULL` (default) the series is treated as one segment. An option here is the 'logg_interfere' table. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
+#' @param clean_f Algorithm name. Only the non-linear "hampel" filter currently supported.
+#' @param na_t Fractional tolerace of the count of NA values within a window for interpolation of missing values. If the number of NAs exceeds the threshold, filtering will not be performed. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
 #' @param tighten Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
 #' @param verbose Logical. Whether or not to report messages and progress.
 #' @param xtra_v Logical. Whether or not to report xtra messages, progess, plus print data tables.
-#' @param full_eval
+#' @param full_eval Logical that indicates the depth of evaluation. This argument is provided parsed internally. Full evaluation can only be completed within `ipayipi::dt_process()` sequence evaluation.
 #' param f_params
 #' @param ppsij Data processing `pipe_seq` table from which function parameters and data are extracted/evaluated. This is parsed to this function automatically by `ipayipi::dt_process()`.
-#' param sf
 #' @param sfc  List of file paths to the temporary station file directory. Generated using `ipayipi::open_sf_con()`.
 #' @param station_file Name of the station being processed.
-#' details
+#' @details
+#'  - `cush`: When `align` is set to `left` at the 'end' of a data series values cannot be evaluated and therefore set to NA, and vice versa when `align` is `right`. NAs at data start and end extremities are avoided when `cush` is set to `TRUE` by switching `align` properties in these cases. When `align` is set to `center` both 'left' and 'right' alignment are used to fill NA values.
+#' 
 #' @author Paul J. Gordijn
 #' @export
 clean_param_eval <- function(
+  phens = NULL,
+  w = 21,
+  mad = 3,
+  align = "left",
+  seg = NA_character_,
+  cush = TRUE,
   clean_f = "hampel",
-  phen_names = NULL,
-  seg_on = NA_character_,
-  seg_fuzz = NULL,
-  seg_na_t = 0.75,
-  w_size = 21,
-  mad_dev = 3,
+  na_t = 0.75,
   tighten = 0.65,
+  owrite = TRUE,
   full_eval = FALSE,
   station_file = NULL,
   ppsij = NULL,
@@ -41,9 +45,9 @@ clean_param_eval <- function(
   "ppsid" <- "phen_name" <- "var_type" <- NULL
 
   # default data.tableish arguments
-  d_args <- list(clean_f = "hampel", phen_names = "NULL",
-    seg_on = "NA_character", seg_fuzz = NULL, seg_na_t = 0.75,
-    w_size = 21, mad_dev = 3, tighten = 0.65
+  d_args <- list(clean_f = "hampel", phens = "NULL", seg = "NULL",
+    cush = TRUE, na_t = 0.75, w = 21, mad = 3, tighten = 0.65, align = "left",
+    owrite = TRUE
   )
   p_args <- list(station_file = "NULL", f_params = NULL, ppsij = "NULL",
     sfc = "NULL"
@@ -61,7 +65,7 @@ clean_param_eval <- function(
   })
 
   # convert input args for clean to list
-  d_args <- d_args[!names(d_args) %in% c("phen_names", "clean_f")]
+  d_args <- d_args[!names(d_args) %in% c("phens", "seg", "clean_f")]
   args <- lapply(seq_along(d_args), function(i) {
     x <- get(names(d_args)[[i]])
     if (!is.vector(x)) x <- as.vector(x)
@@ -69,19 +73,24 @@ clean_param_eval <- function(
     return(x)
   })
   names(args) <- names(d_args)
-  if (is.vector(phen_names)) phen_names <- list(phen_names)
-  if (is.vector(clean_f)) clean_f <- list(clean_f)
-  if (is.vector(seg_on)) seg_on <- list(seg_on)
+  if (is.vector(phens)) phens <- list(phens)
+  #if (is.vector(clean_f)) clean_f <- list(clean_f)
+  if (is.vector(seg)) seg <- list(seg)
+  if (is.vector(mad)) mad <- list(mad)
+  if (is.vector(align)) align <- list(align)
   args <- data.table::as.data.table(args)
-  if (!is.null(phen_names)) args$phen_names <- phen_names
-  if (!is.null(seg_on)) args$seg_on <- seg_on
-  args$clean_f <- clean_f
+  if (!is.null(phens)) args$phens <- phens
+  if (!is.null(seg)) args$seg <- seg
+  if (!is.null(mad)) args$mad <- mad
+  if (!is.null(align)) args$align <- align
+
+  #args$clean_f <- clean_f
   args <- lapply(seq_len(nrow(args)), function(i) as.expression(args[i]))
   args <- lapply(args, function(x) {
-    x$phen_names <- unlist(x$phen_names)
-    x$clean_f <- unlist(x$clean_f)
-    if ("seg_on" %in% names(x)) {
-      if (is.na(x$seg_on)) x$seg_on <- NULL
+    x$phens <- unlist(x$phens)
+    #x$clean_f <- unlist(x$clean_f)
+    if ("seg" %in% names(x)) {
+      if (is.na(x$seg)) x$seg <- NULL
     }
     return(x)
   })
@@ -117,19 +126,20 @@ clean_param_eval <- function(
   # match up phen names with those in existence
   # only use phens that have variable type 'numeric'
   z <- lapply(z, function(x) {
-    pn <- phens_dt[phen_name %ilike% x$phen_names][var_type %in% "num"]
+    pn <- phens_dt[phen_name %ilike% x$phens][var_type %in% "num"]
     if (nrow(pn) > 1) {
-      ipayipi::msg(x = paste0("Note multiple phen name matches. All will be ",
-        "\'cleaned\'. See matches below...", collapse = ""
-      ))
-      cat(paste0(crayon::magenta(x$phen_names, sep = ", ")), "\n")
+      ipayipi::msg(x = cat(crayon::blue(
+        " Note multiple phen name matches. All will be ",
+        "\'cleaned\'. See matches below... ", sep = ""
+      )))
+      cat(paste0(crayon::blue(x$phens, sep = ", ")), "\n")
       print(x)
-      cat(crayon::magenta("Please refine the phen name search keys" %+%
+      cat(crayon::blue("Please refine the phen name search keys" %+%
             " if necessary ..."
         ), "\n"
       )
     }
-    x$phen_names <- pn$phen_name
+    x$phens <- pn$phen_name
     return(x)
   })
   return(NULL)

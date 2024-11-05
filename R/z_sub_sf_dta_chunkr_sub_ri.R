@@ -28,7 +28,7 @@ sf_dta_chunkr_sub_ri <- function(
   ...
 ) {
   "cumn" <- "dta" <- NULL
-  ipayipi::msg("Evaluating data record interval", chunk_v)
+  ipayipi::msg(cat(crayon::silver("Evaluating data record interval")), chunk_v)
   if (all(
     !is.null(dta_sets),
     is.null(indx) && is.null(ri) || !is.null(indx) && rechunk

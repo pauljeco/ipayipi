@@ -44,7 +44,6 @@ gap_eval <- function(
   event_thresh_s = 10 * 60,
   phen_eval = TRUE,
   phens = NULL,
-  keep_open = TRUE,
   meta_events = "meta_events",
   verbose = FALSE,
   xtra_v = FALSE,
@@ -184,9 +183,8 @@ gap_eval <- function(
     verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   # refresh station connection
-  sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file =
-      station_file, verbose = verbose,
-    xtra_v = xtra_v
+  sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file,
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
 
   # generate phen gaps summary ----
@@ -397,10 +395,8 @@ gap_eval <- function(
       verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   }
-  if (!keep_open) {
-    write_station(pipe_house = pipe_house, station_file = station_file,
-      overwrite = TRUE, append = FALSE
-    )
-  }
+  write_station(pipe_house = pipe_house, station_file = station_file,
+    overwrite = TRUE, append = FALSE
+  )
   invisible(list(gaps = gaps))
 }

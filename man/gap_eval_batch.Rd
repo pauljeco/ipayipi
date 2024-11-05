@@ -16,8 +16,8 @@ gap_eval_batch(
   wanted = NULL,
   unwanted = NULL,
   verbose = FALSE,
-  keep_open = TRUE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -36,9 +36,9 @@ gap_eval_batch(
 
 \item{unwanted}{Vector of strings listing station files that should not be included in the import.}
 
-\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
-
 \item{station_file}{Standardised \strong{ipayipi} station file.}
+
+\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
 
 \item{recurr}{Should the function search recursively into sub directories for station files? \code{TRUE} or \code{FALSE}.}
 }

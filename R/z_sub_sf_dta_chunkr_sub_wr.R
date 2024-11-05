@@ -27,7 +27,7 @@ chunkr_sub_wr <- function(
   ...
 ) {
   "%ilike%" <- "date_time" <- "indx" <- NULL
-  ipayipi::msg(cat(crayon::yellow("chunkr_sub_wr()")), chunk_v)
+  ipayipi::msg(cat(crayon::silver("chunkr_sub_wr()")), chunk_v)
   dir.create(dta_room, showWarnings = FALSE, recursive = TRUE)
   # temp dir for chunking data before writing to the dta_room
   tmp_cdir <- tempfile(pattern = "cwrite")

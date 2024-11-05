@@ -3,15 +3,13 @@
 #' @param sfc  List of file paths to the temporary station file directory. Generated using `ipayipi::open_sf_con()`.
 #' @param station_file Name of the station being processed.
 #' @param clean_f Algorithm name. Only "hampel" supported.
-#' @param phen_names Vector of the phenomena names that will be evaluated by the hampel filter. If NULL the function will not run.
-#' @param seg_on Name of column to segment filtering on. Cleaning within each data segment or slice will be run independently.
-#' @param w_size Window size for the hempel filter. Defaults to ten.
-#' @param mad_dev Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.
-#' @param segs Not yet implemented. Vector of station data table names which contain timestamps used to slice data series into segments with independent outlier detection runs. If left `NULL` (default) the run will be from the start to end of data being evaluated.
+#' @param phens Vector of the phenomena names that will be evaluated by the hampel filter. If NULL the function will not run.
+#' @param seg Name of column to segment filtering on. Cleaning within each data segment or slice will be run independently.
+#' @param w Window size for the hempel filter. Defaults to ten.
+#' @param mad Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.
 #' @param seg_fuzz Not yet implemented. String representing the threshold time interval between the list of segment date-time 
-#' @param seg_na_t Not yet implemented. Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.
-#' @param last_rule Not yet implemented. Whether or not to reapply stored rules in the outlier rule column. TRUE will apply old rules.
-#' @param tighten Not yet implemented. Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad_dev factor.
+#' @param na_t Not yet implemented. Fractional tolerace of the amount of NA values in a segment for linear interpolation of missing values.
+#' @param tighten Not yet implemented. Scaling fraction between zero and one that sensitizes the detection of outliers near the head and tail ends of segments. The fraction is multiplied by the mad factor.
 #' @param ppsij Data processing `pipe_seq` table from which function parameters and data are extracted/evaluated. This is parsed to this function automatically by `ipayipi::dt_process()`.
 #' @param verbose Logical. Whether or not to report messages and progress.
 #' @param xtra_v Logical. Whether or not to report xtra messages, progess, plus print data tables.
@@ -21,21 +19,20 @@
 #' @export
 #' @author Paul J. Gordijn
 dt_clean <- function(
-  sfc = NULL,
+  phens = NULL,
+  w = 21,
+  mad = 3,
+  align = "left",
+  seg = NULL,
+  cush = TRUE,
+  clean_f = "hampel",
+  na_t = 0.75,
+  tighten = 0.65,
   station_file = NULL,
   station_file_ext = ".ipip",
-  clean_f = "hampel",
-  phen_names = NULL,
-  seg_on = NULL,
-  w_size = 21,
-  mad_dev = 3,
-  # segs = NULL,
-  # seg_fuzz = NULL,
-  # seg_na_t = 0.75,
-  # last_rule = FALSE,
-  # tighten = 0.65,
   ppsij = NULL,
   f_params = NULL,
+  sfc = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
   chunk_v = FALSE,
@@ -84,44 +81,97 @@ dt_clean <- function(
 
   # prep clean args ----
   z_default <- data.table::data.table(table_name = NA_character_,
-    phen_names = NA_character_, seg_on = NULL, mad_dev = mad_dev,
-    w_size = NA_integer_, clean_f = NA_character_
+    phens = NA_character_, seg = NULL, mad = mad,
+    w = NA_integer_, clean_f = NA_character_
   )[0]
   z <- lapply(f_params, function(x) {
     x <- eval(parse(text = sub("^~", "data.table::data.table", x)))
     x
   })
-  z <- rbind(z_default, data.table::rbindlist(z), fill = TRUE)[
-    order(phen_names)
+  z <- rbind(z_default, data.table::rbindlist(z, fill = TRUE), fill = TRUE)[
+    order(phens)
   ]
   z$table_name <- ppsij$output_dt
-  z$mad_dev <- data.table::fifelse(is.na(z$mad_dev), mad_dev, z$mad_dev)
-  p <- c("date_time", z$phen_names)
-  z <- split.data.frame(z, f = factor(z$phen_names))
+  z$mad <- data.table::fifelse(is.na(z$mad), mad, z$mad)
+  p <- c("date_time", z$phens)
+  segs <- z[!is.na(seg)]$seg
+  # prep centre spelling for data.table
+  z[align %ilike% "centre|center", "align"] <- "center"
+  z <- split.data.frame(z, f = factor(z$phens))
 
   # open data ----
   dt <- dt_dta_open(dta_link = dta_in[[1]])
-  dt <- subset(dt, select = unique(p))
+  dt <- subset(dt, select = c(unique(p), unique(segs)))
   ipayipi::msg(cat(crayon::bgWhite(" Pre-clean data -- head  ")), xtra_v)
   if (xtra_v) print(head(dt))
 
   # run filters ----
   lapply(z, function(zx) {
     sqrw <- 1
-    phenx <- zx$phen_names[1]
-    # prep segments from column of dates joined to agg data
-    # - join dates
-    # - sequential ordering of data
+    phenx <- zx$phens[1]
     while (sqrw <= nrow(zx)) {
-      # run hampel filter
-      dt <- dt[, flag := data.table::frollapply(phenx,
-        FUN = function(x) {
-          hampel(x, w_width = zx$w_size[sqrw], x_devs = zx$mad_dev[sqrw])
-        }, n = zx$w_size[sqrw]
-      ), env = list(phenx = phenx)]
-      # cushion edges
-      # generate summary table
-      # replace values if option is specified
+      ## prep segments ----
+      # prep segments from column of dates joined to agg data
+      # deal with first and last segs, and too short segs?
+      dt[!is.na(s), seg := seq_len(.N), env = list(s = zx[sqrw]$seg)]
+      dt[c(1, .N), seg := 0][!is.na(seg) & !.N & !1, seg := seq_len(.N)]
+      dt[which(seg > 0) + 1, seg := 0][!is.na(seg), seg := seq_len(.N)]
+      dt[!is.na(seg), segn := rep(seq_len((max(seg) / 2)), each = 2)]
+      dt[!is.na(seg)]
+      dtj <- lapply(seq_len(max(dt$seg, na.rm = TRUE) / 2), function(j) {
+        dtj <- dt[which(dt$segn %in% j)[1]:which(dt$segn %in% j)[2]]
+        dtj <- dtj[, n := j][, c("date_time", phenx), with = FALSE]
+        return(dtj)
+      })
+      ### work segments with hampel filter ----
+      dtj <- lapply(dtj, function(xj) {
+        xj <- xj[, flag := data.table::frollapply(phenx,
+          FUN = function(x) {
+            hampel(x, w = zx$w[sqrw], d = zx$mad[sqrw], align = zx[sqrw]$align)
+          }, n = zx$w[sqrw], align = zx[sqrw]$align
+        ), env = list(phenx = phenx)]
+        #### cushion edges ----
+        # if left cushion tail with rigth
+        # if right cushion head with left
+        # if centre cushion head and tail
+
+        # setup window size for center cushions
+        if (zx[sqrw]$align %in% "center") {
+          ws <- zx$w[sqrw] / 2
+          if (round(ws) != ws) ws <- (zx$w[sqrw] + 1) / 2
+        } else {
+          ws <- zx$w[sqrw]
+        }
+        # only cushion if enough rows in segment
+        # set up cushion rows for evaluation
+        if (nrow(xj) > (2 * ws) && cush == TRUE) {
+          if (zx[sqrw]$align %in% "right") {
+            r2 <- NULL
+          } else {
+            r2 <- c((nrow(xj) - (ws * 2)):nrow(xj))
+          }
+          if (zx[sqrw]$align %in% "left") {
+            r1 <- 0
+          } else {
+            r1 <- seq_len(ws * 2)
+          }
+        } else {
+          r1 <- 0
+          r2 <- 0
+        }
+        xj <- xj[r1, cush := data.table::frollapply(phenx,
+          FUN = function(x) {
+            hampel(x, w = zx$w[sqrw], d = zx$mad[sqrw], align = zx[sqrw]$align)
+          }, n = zx$w[sqrw], align = "left"
+        ), env = list(phenx = phenx)]
+        xj <- xj[r2, cush := data.table::frollapply(phenx,
+          FUN = function(x) {
+            hampel(x, w = zx$w[sqrw], d = zx$mad[sqrw], align = zx[sqrw]$align)
+          }, n = zx$w[sqrw], align = "right"
+        ), env = list(phenx = phenx)]
+        # generate summary table
+        # replace values if option is specified
+      })
       sqrw <- sqrw + 1
     }
   })
@@ -264,7 +314,7 @@ dt_clean <- function(
         message("\r", cr_msg, appendLF = FALSE)
         nasc <- sum(is.na(tab$t_bt_level_m))
         nnasc <- sum(!is.na(tab$t_bt_level_m))
-        if (nasc / nnasc <= seg_na_t & !is.infinite(nasc / nnasc)) {
+        if (nasc / nnasc <= na_t & !is.infinite(nasc / nnasc)) {
           should_i <- TRUE
         } else {
           should_i <- FALSE
@@ -279,21 +329,21 @@ dt_clean <- function(
           }
           if (is.factor(rule)) rule <- as.character(rule)
           if (is.na(rule)) {
-            msg <- paste0(" Dflt rule: ", "hf_", w_size, "_", mad_dev, " |")
+            msg <- paste0(" Dflt rule: ", "hf_", w, "_", mad, " |")
             message(msg, appendLF = TRUE)
           } else {
             msg <- paste0(" Last rule: ", rule, " |")
             message(msg, appendLF = TRUE)
             rule <- strsplit(rule, "_")
-            w_size <- as.integer(rule[[1]][2])
+            w <- as.integer(rule[[1]][2])
             x_devs <- as.integer(rule[[1]][3])
           }
 
           tab_ts_cleen_f <- function() {
             cleen_seg <- hampel_f(
               srs = tab_ts[, c("Date_time", "bt_level_m")],
-              w_width = w_size,
-              x_devs = mad_dev,
+              w_width = w,
+              x_devs = mad,
               tighten = tighten
             )
             return(cleen_seg)
@@ -306,7 +356,7 @@ dt_clean <- function(
             t_bt_level_m = as.numeric(cleen_seg$hamper$hf),
             bt_Outlier = as.logical(cleen_seg$hamper$bt_Outlier),
             bt_Outlier_rule = as.factor(
-              rep(paste0("hf_", w_size, "_", mad_dev),
+              rep(paste0("hf_", w, "_", mad),
                 nrow(cleen_seg$hamper)
               )
             )

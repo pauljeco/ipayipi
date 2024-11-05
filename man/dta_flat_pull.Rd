@@ -9,6 +9,7 @@ dta_flat_pull(
   pipe_house = NULL,
   tab_names = NULL,
   phen_name = NULL,
+  gaps = FALSE,
   wide = TRUE,
   ri = NULL,
   output_dir = NULL,
@@ -22,6 +23,7 @@ dta_flat_pull(
   prompt = FALSE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
@@ -33,6 +35,8 @@ dta_flat_pull(
 \item{tab_names}{Vector of table names in a station files from which to extract data. Add items to the vector such that only the first matching table from a station is selected. Table names are selected via the \code{\%in\%} argument.}
 
 \item{phen_name}{The field/column/name of the phenomena which to join into a single data table.}
+
+\item{gaps}{If \code{TRUE} then a logical table of the same dimensions as the extracted flat data is saved to disk The same file name as for the data but with a '_gaps' suffix is used. Where gaps in the data have been detected in the pipeline process respective data rows are set to \code{TRUE}; \code{FALSE} indicates no data gap. Gap data is produced by running \code{ipayipi::gap_eval_batch()}.}
 
 \item{wide}{Logical. If FALSE output data will be pivoted to wide format. Defaults to TRUE.}
 
@@ -54,12 +58,14 @@ dta_flat_pull(
 
 \item{prompt}{Logical. If \code{TRUE} a prompt will be called so that the user can interactively select station files.}
 
-\item{verbose}{Whether to report on progress.}
+\item{verbose}{Whether to report on progress. Logical.}
 
 \item{xtra_v}{Extra verbose. Logical.}
+
+\item{chunk_v}{More messages when chunking data? Logical.}
 }
 \value{
-A list containing 1) the summarised data in a single data.table, 2) a character string representing the time interval by which the data has been summarised, 3) the list of stations used for the summary, 4) the name of the table and the name of the field for which data was summarised.
+A list containing 1) the summarised data in a single data.table, 2) a logical table indicating data gaps, 3) a character string representing the time interval by which the data has been summarised, 4) the list of stations used for the summary, 5) the name of the table and the name of the field for which data was summarised, & 6) the station file extension uesd for querying data.
 }
 \description{
 Queries continuous data of common record intervals.
@@ -71,9 +77,10 @@ Note this function only extracts data from decompressed station files. If a stat
 Paul J. Gordijn
 }
 \keyword{data}
-\keyword{data.}
 \keyword{data;}
 \keyword{long-format}
 \keyword{pipeline;}
+\keyword{query.}
 \keyword{summarise}
 \keyword{time-series}
+\keyword{wide-format}

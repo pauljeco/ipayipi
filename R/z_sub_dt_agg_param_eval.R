@@ -134,11 +134,13 @@ agg_param_eval <- function(
     for (i in seq_along(f_params)) assign(names(f_params[i]), f_params[[i]])
 
     # read phens_dt
-    phens_dt <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
+    phens_dto <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
 
-    # yet to implement --- filter phens
+    # filter phens
     if (!all_phens && nrow(xd) > 0) {
-      phens_dt <- phens_dt[phen_name %in% xd$phen_name]
+      phens_dt <- phens_dto[phen_name %in% xd$phen_name]
+    } else {
+      phens_dt <- phens_dto
     }
 
     # generate default agg_info table based on phens_dt
@@ -152,6 +154,17 @@ agg_param_eval <- function(
       unlist(gregexpr("_", phens_dt$ppsid))[1] - 1
     ))
     phens_dt <- phens_dt[stage == ppsij$dt_n[1]][, -c("stage"), with = FALSE]
+
+    # message if no phens are found for aggregation
+    if (nrow(phens_dt) == 0) {
+      message(cat(crayon::bgRed(
+        " No phens to aggregate --- no matching phens harvested!  "
+      ) %+% crayon::blue(" Searching for phens: \n")))
+      print(xd$phen_name)
+      message(cat(crayon::blue(" Available phens: \n")))
+      print(phens_dto$phen_name)
+      message(cat(crayon::blue(" Please check agg_param_eval parameters. ")))
+    }
     # get agg functions
     p <- merge(x = phens_dt, y = ftbl, by = "measure", all.x = TRUE)
     # check phen_dt for info and generate functions accordingly

@@ -41,7 +41,7 @@ been imbibed into the \code{ipayipi} data pipeline. Advisable to leave this as t
 
 \item{col_dlm}{The column delimter which is fed to \code{data.table::fread()}. Defaults to NULL. When \code{NULL} the function uses \code{data.table::fread} ability to 'guess' the delimeter.}
 
-\item{dt_format}{Argument passed to \code{ipayipi::imbibe_raw_logger_dt()}. The function attempts to work out the date-time format from a vector of format types supplied to this argument. The testing is done via \code{lubridate::parse_date_time()}. \code{lubridate::parse_date_time()} prioritizes the tesing of date-time formats in the order vector of formats supplied. The default vector of date-time formats supplied should work well for most logger outputs.}
+\item{dt_format}{Argument passed to \code{ipayipi::imbibe_raw_logger_dt()}. The function attempts to work out the date-time format from a vector of format types supplied to this argument. The testing is done via \code{lubridate::parse_date_time()}. \code{lubridate::parse_date_time()} prioritizes the tesing of date-time formats in the order vector of formats supplied. The default vector of date-time formats supplied should work well for most logger outputs. \bold{NB!} seconds are required.}
 
 \item{dt_tz}{recognized time-zone of the data locale.}
 
@@ -63,6 +63,8 @@ with a bar ('|'), and spaces avoided unless part of the keyword.}
 \item{recurr}{Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.}
 
 \item{verbose}{Logical passed to \code{attempt::attempt()} which reads the logger text file in with either \code{data.table::fread()} or base R.}
+
+\item{xtra_v}{Logical. Extra vrbose---useful for understanding errors and progress.}
 
 \item{record_interval}{If there are is no discrete, record interval set in the logger program, i.e., the sampling is event based, then this parameter must be set to "event_based". Defaults to "continuous".}
 }

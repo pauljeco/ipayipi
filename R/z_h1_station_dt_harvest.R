@@ -94,7 +94,7 @@ dt_harvest <- function(
         ]
         gi <- gi[, ":="(gi1 = gap_start, gi2 = gap_end, p = phen)]
         # join data
-        z <- glz[gi, on = .(gl2 >= gi1, gl1 >= gi2, gz_p == p)][
+        z <- glz[gi, on = .(gl2 >= gi1, gl1 <= gi2, gz_p == p)][
           order(phen, gap_start, gap_end)
         ]
         sdc <- c("gap_start", "gap_end", "gz_gap_start", "gz_gap_end")
@@ -148,9 +148,22 @@ dt_harvest <- function(
         z <- unique(z,
           by = c("phen", "table_name", "gz_gap_start", "gz_gap_end")
         )
+        # anti-join logger gaps - adds in logger joins not included in the
+        # left joins above
         z <- z[, c(paste0("gz_", glz_n)), with = FALSE]
         names(z) <- gsub("^gz_", "", names(z))
+        z <- z[, ":="(gi1 = gap_start, gi2 = gap_end)]
+        zl <- z[glz, on = .(gi1 <= gl2, gi2 >= gl1), mult = "all"
+        ][is.na(phen)][, c(paste0("gz_", glz_n)), with = FALSE]
+        names(zl) <- gsub("^gz_", "", names(zl))
+        z <- z[, glz_n, with = FALSE]
+        z <- rbind(z, zl)
         z <- z[, dt_diff_s := difftime(gap_end, gap_start, units = "secs")]
+        z <- z[order(phen, gap_start, gap_end)]
+        # WRITE TABLES TO HD TO EXAMINE -- TESTING
+        # fwrite(z, 'z.csv')
+        # fwrite(glz, 'glz.csv')
+        # fwrite(gi, 'gi.csv')
       } else {
         z <- glz
       }

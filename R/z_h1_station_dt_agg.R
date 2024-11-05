@@ -36,10 +36,8 @@ dt_agg <- function(
   "%ilike%" <- ".N" <- ":=" <- ".SD" <- "." <- NULL
   "dttm_fl" <- "phen_name" <-  "agg_f" <- "dt_record_interval" <-
     "date_time" <- "phen_out_name" <- "agg_intervals" <- "var_type" <-
-    "ignore_nas" <- "gap_start" <- "gap_end" <- "phen" <- "xdt1" <-
-    "xdt2" <- "orig_table_name" <- "ppsid" <- "d1" <- "d2" <-
-    "nas" <- "int" <- "colv" <- "dt_diff_s" <- "p" <- "table_name" <-
-    "tn" <- NULL
+    "ignore_nas" <- "gap_start" <- "gap_end" <- "phen" <-
+    "orig_table_name" <- "ppsid" <- "p" <- "table_name" <- "tn" <- NULL
   # read and prep data 1 ----
   sfcn <- names(sfc)
   if ("dt_working" %in% sfcn) {
@@ -54,6 +52,7 @@ dt_agg <- function(
       unique(f_params$orig_table_name
       ), collapse = "|"
     )]
+    hsf_dta <- hsf_dta[hsf_dta %ilike% paste0("^", ppsij$dt_n[1], "_.")]
     dta_in <- sf_dta_read(sfc = sfc, tv = hsf_dta)
     names(dta_in) <- sub(".*_hsf_table_", "", hsf_dta, fixed = FALSE)
   }

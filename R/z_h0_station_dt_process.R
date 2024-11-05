@@ -230,11 +230,6 @@ dt_process <- function(
         ppsij = ppsij, sfc = sfc, verbose = verbose, xtra_v = xtra_v
       )
       ppsij_ud <- do.call(what = f, args = args)
-      # gp <- sf_dta_read(sfc, tv = "gaps")[["gaps"]][
-      #   table_name %in% ppsij$output_dt
-      # ]
-      # message("Gap table")
-      # print(gp)
       return(ppsij_ud$ppsij)
     })
     pit <- data.table::rbindlist(pit)

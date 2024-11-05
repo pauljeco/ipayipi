@@ -9,7 +9,7 @@
 #' @param file_ext_out The file extension used when raw logger data which has
 #'  been imbibed into the `ipayipi` data pipeline. Advisable to leave this as the default (".ipr") for the pipeline structure.
 #' @param col_dlm The column delimter which is fed to `data.table::fread()`. Defaults to NULL. When `NULL` the function uses `data.table::fread` ability to 'guess' the delimeter.
-#' @param dt_format Argument passed to `ipayipi::imbibe_raw_logger_dt()`. The function attempts to work out the date-time format from a vector of format types supplied to this argument. The testing is done via `lubridate::parse_date_time()`. `lubridate::parse_date_time()` prioritizes the tesing of date-time formats in the order vector of formats supplied. The default vector of date-time formats supplied should work well for most logger outputs.
+#' @param dt_format Argument passed to `ipayipi::imbibe_raw_logger_dt()`. The function attempts to work out the date-time format from a vector of format types supplied to this argument. The testing is done via `lubridate::parse_date_time()`. `lubridate::parse_date_time()` prioritizes the tesing of date-time formats in the order vector of formats supplied. The default vector of date-time formats supplied should work well for most logger outputs. \bold{NB!} seconds are required.
 #' @param dt_tz recognized time-zone of the data locale.
 #' @param record_interval If there are is no discrete, record interval set in the logger program, i.e., the sampling is event based, then this parameter must be set to "event_based". Defaults to "continuous".
 #' @param data_setup List of options used to extract data and metadata from instrument data outputs. For a description of the `data_setup` _see_ \code{\link{imbibe_raw_logger_dt}}.
@@ -22,6 +22,7 @@
 #' @param unwanted Similar to wanted, but keywords for filtering out unwanted stations.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
 #' @param verbose Logical passed to `attempt::attempt()` which reads the logger text file in with either `data.table::fread()` or base R.
+#' @param xtra_v Logical. Extra vrbose---useful for understanding errors and progress.
 #' @param max_rows The number of rows to use when evaluating the record interval. Argument is parsed to `ipayipi::record_interval_eval()`.
 #' @details
 #'  In the pipeline structure this function should be used post `ipayipi::logger_data_import_batch()`. `ipayipi::imbibe_raw_batch()` is a wrapper for `ipayipi::imbibe_raw_logger_dt()` --- see this functions documentation for more details.
@@ -62,6 +63,7 @@ imbibe_raw_batch <- function(
   xtra_v = FALSE,
   ...
 ) {
+  "%+%" <- NULL
   "err" <- NULL
   # get list of data to be imported
   unwanted <- paste0("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps",
@@ -120,7 +122,28 @@ imbibe_raw_batch <- function(
       fn_htmp <- tempfile(pattern = "raw_",
         tmpdir = file.path(tempdir(), "wait_room_tmp")
       )
-      st_dt <- min(fl$ipayipi_data_raw$raw_data$date_time)
+      # catch for incorrect time import formula
+      st_dt <- attempt::attempt(min(fl$ipayipi_data_raw$raw_data$date_time))
+      if (attempt::is_try_error(st_dt)) {
+        mcat(crayon::bgBlue(" Error in time format read: check raw data " %+%
+            "and \'dt_format\' function arguments! \n" %+%
+            " Read raw date format example: " %+%
+            fl$ipayipi_data_raw$raw_data$date_time[1]
+        ))
+        mcat(crayon::blue(" If ipayipi is reading the incorrect column for " %+%
+            "info then check \n argument \'data_setup\'."
+        ))
+        # return error table
+        return(data.table::data.table(
+          err = TRUE,
+          fn_htmp = fn_htmp,
+          fp = fp,
+          fn = fn,
+          st_dt = NULL,
+          ed_dt = NULL,
+          file_ext_in = file_ext_in
+        ))
+      }
       ed_dt <- max(fl$ipayipi_data_raw$raw_data$date_time)
       dttm_rng <- paste0(
         as.character(format(st_dt, "%Y")),

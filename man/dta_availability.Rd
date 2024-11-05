@@ -15,11 +15,11 @@ dta_availability(
   end_dttm = NULL,
   tbl_names = NULL,
   meta_events = "meta_events",
-  verbose = FALSE,
   wanted = NULL,
   unwanted = NULL,
   recurr = TRUE,
   prompt = FALSE,
+  verbose = FALSE,
   xtra_v = FALSE,
   ...
 )
@@ -45,8 +45,6 @@ dta_availability(
 
 \item{meta_events}{\emph{Parsed to} \code{ipayipi::gap_eval()}.}
 
-\item{verbose}{Logical. Whether or not to report messages and progress.}
-
 \item{wanted}{A string of keywords to use to filter which stations are selected for processing. Multiple search kewords should be seperated with a bar ('|'), and spaces avoided unless part of the keyword.}
 
 \item{unwanted}{Similar to wanted, but keywords for filtering out unwanted stations.}
@@ -54,6 +52,8 @@ dta_availability(
 \item{recurr}{Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.}
 
 \item{prompt}{Should the function use an interactive file selection function otherwise all files are returned. TRUE or FALSE.}
+
+\item{verbose}{Logical. Whether or not to report messages and progress.}
 }
 \value{
 A list containing a plot, which shows the availability of data, the gap data as formatted for plotting. The plot is produced using \code{ggplot2::ggplot()}.

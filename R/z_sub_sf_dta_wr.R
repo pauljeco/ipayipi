@@ -36,7 +36,7 @@ sf_dta_wr <- function(
     ...) {
   "%ilike%" <- "table_name" <- NULL
 
-  ipayipi::msg(cat(crayon::yellow("sf_dta_wr()")), chunk_v)
+  ipayipi::msg(cat(crayon::silver("sf_dta_wr()")), chunk_v)
   # check args ----
   # required: tn, dta, dta_room
   if (is.null(dta) || "function" %in% class(dta)) return(TRUE)
@@ -46,7 +46,7 @@ sf_dta_wr <- function(
     msg <- paste0("Null args provided to sf_dta_wr(): ",
       paste(names(a_args), collapse = ", "), "."
     )
-    ipayipi::msg(cat(crayon::yellow(msg)), chunk_v)
+    ipayipi::msg(cat(crayon::silver(msg)), chunk_v)
   }
   if ("f_params" %in% class(dta)) {
     saveRDS(dta, dta_room)
@@ -122,6 +122,6 @@ sf_dta_wr <- function(
     m <- paste0(tn, ": Data saved as single RDS.")
     s <- TRUE
   }
-  if (s) ipayipi::msg(cat(crayon::yellow(m)), chunk_v)
+  if (s) ipayipi::msg(cat(crayon::silver(m)), chunk_v)
   return(s)
 }

@@ -101,7 +101,7 @@ dt_calc <- function(
     attempt::try_catch(eval(parse(text = paste0(fx, collapse = ""))))
   }
   ipayipi::msg(cat(crayon::bgWhite(" Calc data.table syntax: ")), xtra_v)
-  ipayipi::msg(cat(crayon::silver(f_params), sep = "\n "), xtra_v)
+  ipayipi::msg(cat(crayon::cyan(f_params), sep = "\n "), xtra_v)
   dte <- list(attempt::attempt(eval_f(f_params), silent = TRUE))
   if (attempt::is_try_error(dte[[1]])) {
     err <- dte[[1]][1]

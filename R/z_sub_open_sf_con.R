@@ -59,10 +59,9 @@ open_sf_con <- function(
   if (!tmp || !sf_tmp_ex) {
     sfn <- names(readRDS(station_file))
     if (!is.null(tv)) sfn <- sfn[sfn %ilike% tv]
+    mcat(crayon::silver(" Extracting data: \n"), xtra_v)
     lapply(sfn, function(x) {
-      ipayipi::msg(cat(crayon::yellow(
-        "Extracting: " %+% station_file %+% ": " %+% x
-      )), xtra_v)
+      mcat(crayon::silver(station_file %+% ": " %+% x %+% ". "), xtra_v)
       sfx <- readRDS(station_file)[[x]]
       # chunk data ----
       ds <- NULL
@@ -84,7 +83,7 @@ open_sf_con <- function(
         dta = sfx, tn = x, rit = rit, ri = ri, verbose = verbose,
         overwrite = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
       )
-      invisible(file.path(sf_tmp, x))
+      return(file.path(sf_tmp, x))
     })
   }
   # list files and dirs ----

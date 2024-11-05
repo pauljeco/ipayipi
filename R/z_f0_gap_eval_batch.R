@@ -28,8 +28,8 @@ gap_eval_batch <- function(
   wanted = NULL,
   unwanted = NULL,
   verbose = FALSE,
-  keep_open = TRUE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
 
@@ -41,8 +41,8 @@ gap_eval_batch <- function(
 
   # open connections to station files
   lapply(station_files, function(x) {
-    ipayipi::open_sf_con(pipe_house = pipe_house, station_file = x,
-      verbose = verbose
+    open_sf_con(pipe_house = pipe_house, station_file = x,
+      verbose = verbose, chunk_v = chunk_v
     )
   })
 
@@ -58,7 +58,7 @@ gap_eval_batch <- function(
   # generate gap table for each station file
   gaps <- lapply(station_files, function(x) {
     cr_msg <- padr(core_message = paste0(
-      " +> ", gsub(station_ext, "", x), collapes = ""
+      " +> ", gsub(station_ext, "", x), collapse = ""
     ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
     force_extras = FALSE, justf = c(1, 1)
     )

@@ -27,7 +27,9 @@ sf_dta_chunkr_sub_rechnk <- function(
   ...
 ) {
   "chnk_fl" <- "chnk_cl" <- "dta" <- NULL
-  ipayipi::msg("Rechuning: sf_dta_chunkr_sub_rechnk()", chunk_v)
+  ipayipi::msg(cat(crayon::silver("Rechunking: sf_dta_chunkr_sub_rechnk()")),
+    chunk_v
+  )
   # rechunk data ----
   if (rechunk && !is.null(indx) && chunk_i != indx$chunk_i) {
     imn <- min(c(dts_min, indx$mn))

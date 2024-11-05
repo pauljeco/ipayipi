@@ -146,7 +146,7 @@ mhlanga <- function(
   if (join == "left_join") {
     dsyn <- paste0("y_tbl[x_tbl", on, "]", collapse = "")
     ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
-    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
+    ipayipi::msg(cat(crayon::cyan(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
     xy <- xy[, names(xy)[!names(xy) %in% c("xd1", "xd2")], with = FALSE]
     xy <- xy[, c(names(x_tbl)[names(x_tbl) %in% names(xy)], names(y_tbl)),
@@ -158,7 +158,7 @@ mhlanga <- function(
   if (join == "right_join") {
     dsyn <- paste0("x_tbl[y_tbl", on, "]", collapse = "")
     ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
-    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
+    ipayipi::msg(cat(crayon::cyan(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
   }
 
@@ -166,7 +166,7 @@ mhlanga <- function(
   if (join == "inner_join") {
     dsyn <- paste0(dsyn, " , nomatch=", "NULL", collapse = "")
     ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
-    ipayipi::msg(cat(crayon::silver(dsyn), sep = "\n "), xtra_v)
+    ipayipi::msg(cat(crayon::cyan(dsyn), sep = "\n "), xtra_v)
     xy <- eval(parse(text = dsyn))
   }
 
@@ -174,11 +174,11 @@ mhlanga <- function(
   if (join == "full_join" && !any(time_seq[1], time_seq[2])) {
     x_key <- names(x_tbl)[names(x_tbl) %ilike% x_key[1]][1]
     y_key <- names(y_tbl)[names(y_tbl) %ilike% y_key[1]][1]
-    j_txt <- cat("dt = merge(x = x_tbl, y = y_tbl, all = TRUE, by.x = ",
+    j_txt <- paste0("dt = merge(x = x_tbl, y = y_tbl, all = TRUE, by.x = ",
       x_key, ", by.y = ", y_key, ")", sep = ""
     )
     ipayipi::msg(cat(crayon::bgWhite(" Join data.table syntax: ")), xtra_v)
-    ipayipi::msg(cat(crayon::silver(j_txt), sep = "\n "), xtra_v)
+    ipayipi::msg(cat(crayon::cyan(j_txt), sep = "\n "), xtra_v)
     xy <- merge(x = x_tbl, y = y_tbl, all = TRUE, by.x = x_key, by.y = y_key)
 
     # clean up duplicate names and cover over x table NA values

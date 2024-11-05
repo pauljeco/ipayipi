@@ -11,7 +11,6 @@ gap_eval(
   event_thresh_s = 10 * 60,
   phen_eval = TRUE,
   phens = NULL,
-  keep_open = TRUE,
   meta_events = "meta_events",
   verbose = FALSE,
   xtra_v = FALSE,
@@ -33,11 +32,11 @@ gap_eval(
 
 \item{phens}{Vector of phenomena names used for the 'phen' gap evaluation. Phenomena gap evaluation checks for 'NA' values in each phenomena column of a data table. Phenomena gaps result from sensor errors, whilst logger downtime result in 'logger' data gaps.}
 
-\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
-
 \item{meta_events}{Optional. The name of the data.table in the station file with event metadata. Defaults to "meta_events".}
 
 \item{verbose}{Logical. Whether or not to report messages and progress.}
+
+\item{keep_open}{Logical. Keep \emph{hidden} 'station_file' open for ease of access. Defaults to \code{TRUE}.}
 }
 \value{
 A table describing data 'gaps'

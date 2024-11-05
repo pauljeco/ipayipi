@@ -121,7 +121,7 @@ header_sts <- function(
         )
         dttm_cols <- c("date_time", "start_dttm", "end_dttm")
         # round up or down dates
-        if (!m$data_summary$dttm_inc_exc) {
+        if (m$data_summary$dttm_inc_exc) {
           # minus ti
           lapply(seq_along(tbls_ie), function(j) {
             sdc <- names(m[[tbls_ie[j]]])[names(m[[tbls_ie[j]]]) %in% dttm_cols]
