@@ -107,7 +107,7 @@ append_station_batch <- function(
       ))
       new_data$phens$table_name <- new_data$data_summary$table_name[1]
       if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
-        " " = "{i}: working on {x[i][[\'sf_file\']]}"
+        "{i}: working on {x[i][[\'sf_file\']]}"
       ))
       # get/make station file
       fp <- file.path(pipe_house$ipip_room, paste0(x[i][["sf"]], station_ext))
@@ -129,9 +129,6 @@ append_station_batch <- function(
           by_station_table = by_station_table, phen_id = phen_id,
           verbose = verbose, xtra_v = xtra_v
         )
-        if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
-          ">" = "{paste0(x[i][[\'sf\']], station_ext)} updated"
-        ))
       }
       # close station file connection if finished with the station
       j <- i + 1
@@ -141,10 +138,10 @@ append_station_batch <- function(
             paste0(x[i][["sf"]], station_ext), append = TRUE,
           overwrite = TRUE, chunk_v = chunk_v
         )
+        if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
+          "v" = "finished with {paste0(x[i][[\'sf\']], station_ext)}"
+        ))
       }
-      if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
-        " " = "finished with {paste0(x[i][[\'sf\']], station_ext)}"
-      ))
       invisible(x[i][["sf"]])
     })
     invisible(unique(upgraded_stations))
