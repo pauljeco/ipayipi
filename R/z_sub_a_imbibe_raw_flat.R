@@ -70,10 +70,14 @@ imbibe_raw_flat <- function(
     "mdy HMOS",  "mdy HMS",
     "mdy IMOSp",  "mdy IMSp",
     "dmY HMOS", "dmY HMS",
+    "dmy HMOS", "dmy HMS",
     "dmy IMOSp", "dmy IMSp"
   ),
   dt_tz = "Africa/Johannesburg",
   data_setup = NULL,
+  dsi = NULL,
+  dyno_read_f = "dyno_read",
+  nrows = 250,
   verbose = FALSE,
   xtra_v = FALSE,
   ...
@@ -81,40 +85,26 @@ imbibe_raw_flat <- function(
   "%ilike%" <- ".N" <- NULL
   "phen_name" <- NULL
 
-  # read flat
-  file <- attempt::attempt(data.table::fread(file = file_path, header = FALSE,
-      check.names = FALSE, blank.lines.skip = FALSE, sep = col_dlm,
-      showProgress = xtra_v, strip.white = FALSE, fill = TRUE
-    ), silent = TRUE
+  # read flat file
+  args <- list(file_path = file_path, col_dlm = col_dlm, nrows = nrows,
+    xtra_v = xtra_v, dsi = dsi
   )
+  # start with default option
+  file <- attempt::attempt(do.call("deft_read", args = args), silent = TRUE)
+
   # if there was an error then we try and read the file using base r
-  if (attempt::is_try_error(file) || ncol(file) == 1) {
-    # use auto fread
-    dyno_read <- function(file_path = NULL, ...) {
-      file <- data.table::fread(file_path, header = FALSE, ...)
-      l <- R.utils::countLines(file_path)[1]
-      file_head <- readLines(file_path)[1:(l - nrow(file))]
-      file_head <- lapply(file_head, function(x) {
-        x <- strsplit(x, split = col_dlm)
-        x <- unlist(c(x, rep(NA, ncol(file) - length(x))))
-        x <- lapply(x, function(z) gsub("\"", "", z))
-        names(x) <- names(file)
-        return(data.table::as.data.table(x))
-      })
-      file_head <- data.table::rbindlist(file_head)
-      file <- rbind(file_head, file, use.names = TRUE)
-      return(file)
-    }
-    file <- attempt::attempt(dyno_read(file_path))
+  if (attempt::is_try_error(file) || ncol(file$file) == 1) {
+    # dyno read is based on data.table auto read --see util f's
+    file <- attempt::attempt(do.call(dyno_read_f, args = args), silent = TRUE)
   }
   if (attempt::is_try_error(file)) {
-    ipayipi::msg("Failed reading file check recognised file format", xtra_v)
-    ipayipi::msg(paste0("Use \`imbibe_raw_batch()\` for processing ",
-        "files in the \'wait_room\'.", collapse = ""
-      ), xtra_v
-    )
-    return(list(ipayipi_data_raw = file, err = TRUE))
+    cli::cli_inform(c(
+      "!" = "Failed reading file; check recognised file format"
+    ))
+    return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
   }
+  dsi <- file$dsi
+  file <- file$file
   data_setup_names <- c(
     # *1           # *2             # 3         # *4
     "file_format", "station_title", "location", "logger_type",
@@ -126,34 +116,35 @@ imbibe_raw_flat <- function(
     "date_time", "dttm_inc_exc",
     # *13        # 14         # 15             # 16
     "phen_name", "phen_unit", "phen_var_type", "phen_measure",
-    # 17           # 18
-    "phen_offset", "sensor_id",
-    # 19      # 20
+    # 17           # 18          # 19
+    "phen_offset", "phen_clean", "sensor_id",
+    # 20      # 21
     "id_col", "data_row"
   )
   if (is.list(data_setup)) {
     # check that the defaults have been supplied
-    if (!any(data_setup_names[c(1:2, 4:5, 11, 20)] %in% names(data_setup))) {
-      ipayipi::msg(paste0("The following names were not supplied: ",
-          data_setup_names[!data_setup_names[c(1:2, 4:5, 11, 20)] %in%
-              names(data_setup)
-          ], sep = "\n"
-        ), xtra_v
-      )
-      ipayipi::msg("Supply all required information in the 'data_setup'!",
-        xtra_v
-      )
+    if (!any(data_setup_names[c(1:2, 4:5, 11, 21)] %in% names(data_setup))) {
+      if (xtra_v) {
+        cli::cli_inform(c(
+          "!" = paste0("The following names were not supplied: ",
+            data_setup_names[!data_setup_names[c(1:2, 4:5, 11, 21)] %in%
+                names(data_setup)
+            ], sep = "\n"
+          )
+        ), "!" = "Supply all required information in the 'data_setup'!")
+      }
       return(list(ipayipi_data_raw = file, err = TRUE))
     }
     # check for unrecognised names
     if (any(!names(data_setup) %in% data_setup_names)) {
-      ipayipi::msg(paste0("The following names were not supported: ",
+      cli::cli_inform(c(
+        "!" = paste0("The following names from {.var data_setup} are not",
+          " supported: ",
           names(data_setup)[!names(data_setup) %in% data_setup_names],
           sep = "\n"
-        ), xtra_v
-      )
-      ipayipi::msg("Unsupported names in the 'data_setup'!", xtra_v)
-      return(list(ipayipi_data_raw = file, err = TRUE))
+        )
+      ))
+      return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
     }
     # get header information
     head_names <- data_setup_names[1:10]
@@ -236,7 +227,7 @@ imbibe_raw_flat <- function(
       "_+$|^_+", "", head_info_i$station_title
     )
     # summarise phenomena info
-    phen_names <- data_setup_names[13:18]
+    phen_names <- data_setup_names[13:17]
     phen_info <- data_setup[names(data_setup) %in% phen_names]
     phen_info_ij <- lapply(seq_along(phen_info), function(i) {
       if (any(class(phen_info[[i]]) %in% "ipayipi rng")) {
@@ -274,6 +265,13 @@ imbibe_raw_flat <- function(
     ) {
       stop("Make sure all phenomena range info provided is equal.")
     }
+    # clean up names
+    phen_clean <- data_setup$phen_clean
+    if (!is.null(phen_clean)) {
+      phen_info_i$phen_name <- lapply(phen_info_i$phen_name, function(pix) {
+        gsub(phen_clean$clean[1], "", pix[1])
+      })
+    }
     phen_null <- phen_names[!phen_names %in% names(phen_info)]
     phen_null_i <- lapply(phen_null, function(z) NA)
     names(phen_null_i) <- phen_null
@@ -291,33 +289,39 @@ imbibe_raw_flat <- function(
     ]
     names(dta) <- unlist(phen_info$phen_name)
     dta <- dta[, names(dta)[!names(dta) %in% ""], with = FALSE]
+
     # check dta names and return error if problematic
     nchk <- names(dta)[!names(dta) %in% "no_spec"]
     nchk <- sapply(nchk, function(x) {
       attempt::try_catch(expr = as.numeric(x), .w = ~TRUE, .e = ~TRUE)
     })
     if (length(nchk[nchk != FALSE]) == 0) {
-      ipayipi::msg(
-        x = "Failure to render phen names -- check phen name row in data_setup",
-        verbose = xtra_v
+      cli::cli_alert_danger(
+        "Failure to render phen names---check phen name row in data_setup"
       )
-      return(list(ipayipi_data_raw = file, err = TRUE))
+      return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
     }
     cat_cols <- names(file)[data_setup$date_time]
-    file[, date_time := do.call(paste, .SD), .SDcols = cat_cols]
+    file[data_setup$data_row:nrow(file),
+      date_time := do.call(paste, .SD), .SDcols = cat_cols
+    ]
     date_time <- attempt::attempt(lubridate::parse_date_time(
-      x = file[data_setup$data_row:nrow(file), ][,
-        date_time := do.call(paste, .SD), .SDcols = cat_cols
-      ]$date_time, orders = dt_format, tz = dt_tz
-    ))
-    if (attempt::is_try_error(date_time) && xtra_v) {
-      ipayipi::msg("Problem with reading date-time values")
-      print(file[data_setup$data_row:nrow(file), ][[
-        data_setup$date_time
-      ]][1:5])
-      message("Read as:")
-      print(date_time[1:5])
-      return(list(ipayipi_data_raw = file, err = TRUE))
+      x = file[data_setup$data_row:nrow(file), ]$date_time,
+      orders = dt_format, tz = dt_tz
+    ), silent = TRUE)
+    if (attempt::is_try_error(date_time)) {
+      if (xtra_v) {
+        cli::cli_inform(c(
+          "!" = "Problem with reading date-time values. Example below:"
+        ))
+        print(file[data_setup$data_row:nrow(file), ][[
+          data_setup$date_time
+        ]][1:5])
+        cli::cli_inform(c(
+          "Date-time values read as: {date_time[1:5]}"
+        ))
+      }
+      return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
     }
     dta$date_time <- date_time
     if (is.null(data_setup$id_col)) {
@@ -355,13 +359,22 @@ imbibe_raw_flat <- function(
     dta <- dta[, names(dta)[!names(dta) %in% "no_spec"], with = FALSE]
     phens <- phens[!phen_name %in% "no_spec"]
 
+    # remove ignored phens
+    if (!is.null(phen_clean$ignore)) {
+      dta <- dta[,
+        names(dta)[!names(dta) %ilike% phen_clean$ignore], with = FALSE
+      ]
+      phens <- phens[!phen_name %ilike% phen_clean$ignore]
+    }
     # check the data half open statement
     if (is.null(data_setup$dttm_inc_exc)) {
       data_setup$dttm_inc_exc <- c(TRUE, FALSE)
     }
     if (length(data_setup$dttm_inc_exc) == 1) {
-      ipayipi::msg("Error: Check \'dttm_inc_exc\' parameter!", xtra_v)
-      return(list(ipayipi_data_raw = file, err = TRUE))
+      cli::cli_inform(c(
+        "!" = "Error: Check \'dttm_inc_exc\' parameter!"
+      ))
+      return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
     }
     # finalize the data_summary
     data_summary <- data.table::data.table(
@@ -394,6 +407,10 @@ imbibe_raw_flat <- function(
   ipayipi_data_raw <- list(data_summary = data_summary, raw_data = dta,
     phens = phens
   )
+  # must have read data for success
+  if (nrow(data_summary) == 0 || is.null(data_summary)) {
+    return(list(ipayipi_data_raw = file, err = TRUE, dsi = dsi))
+  }
   class(ipayipi_data_raw) <- "ipayipi_raw_data"
-  return(list(ipayipi_data_raw = ipayipi_data_raw, err = FALSE))
+  return(list(ipayipi_data_raw = ipayipi_data_raw, err = FALSE, dsi = dsi))
 }

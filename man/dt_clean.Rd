@@ -2,16 +2,17 @@
 % Please edit documentation in R/z_h1_station_dt_clean.R
 \name{dt_clean}
 \alias{dt_clean}
-\title{Apply filter windows to time series data}
+\title{Dev function: Apply filter windows to time series data}
 \usage{
 dt_clean(
   phens = NULL,
   w = 21,
-  mad = 3,
+  madf = 3,
   align = "left",
   seg = NULL,
   cush = TRUE,
   clean_f = "hampel",
+  owrite = TRUE,
   na_t = 0.75,
   tighten = 0.65,
   station_file = NULL,
@@ -30,7 +31,7 @@ dt_clean(
 
 \item{w}{Window size for the hempel filter. Defaults to ten.}
 
-\item{mad}{Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.}
+\item{madf}{Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.}
 
 \item{seg}{Name of column to segment filtering on. Cleaning within each data segment or slice will be run independently.}
 
@@ -50,12 +51,18 @@ dt_clean(
 
 \item{xtra_v}{Logical. Whether or not to report xtra messages, progess, plus print data tables.}
 
-\item{seg_fuzz}{Not yet implemented. String representing the threshold time interval between the list of segment date-time}
+\item{chunk_v}{Logical. Print data chunking messages. Useful for debugging/digging into chunking methods.}
 
-\item{chunk}{_v Logical. Print data chunking messages. Useful for debugging/digging into chunking methods.}
+\item{seg_fuzz}{Not yet implemented. String representing the threshold time interval between the list of segment date-time}
 }
 \description{
-Uses the non-parametric hampel filter to detect anomalies and impute values in a univariate series of numeric data.
+Function under development. Uses the non-parametric hampel filter to detect anomalies and impute values in a univariate series of numeric data.
+}
+\details{
+This function employs a user-customised hampel filter to check data for outliers and impute missing values with the median of the filter window. Function under development.
+\itemize{
+\item Need to add generated table details to the phen_ds summary table!
+}
 }
 \author{
 Paul J. Gordijn

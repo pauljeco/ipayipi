@@ -157,13 +157,12 @@ agg_param_eval <- function(
 
     # message if no phens are found for aggregation
     if (nrow(phens_dt) == 0) {
-      message(cat(crayon::bgRed(
-        " No phens to aggregate --- no matching phens harvested!  "
-      ) %+% crayon::blue(" Searching for phens: \n")))
-      print(xd$phen_name)
-      message(cat(crayon::blue(" Available phens: \n")))
-      print(phens_dto$phen_name)
-      message(cat(crayon::blue(" Please check agg_param_eval parameters. ")))
+      cli::cli_inform(c("i" = "In aggregation:",
+        "!" = "No phens to aggregate --- no matching phens harvested!",
+        "i" = " Searching for phens:", "*" = "{xd$phen_name}",
+        "i" = "Available phens:", "*" = "{phens_dto$phen_name}",
+        ">" = "Please check agg_param_eval parameters."
+      ))
     }
     # get agg functions
     p <- merge(x = phens_dt, y = ftbl, by = "measure", all.x = TRUE)
@@ -321,12 +320,15 @@ agg_param_eval <- function(
       phen_name %in% c(rp$phen_out_name, "gid")
     ]
     if (nrow(rphen) == 0) {
-      message(paste0("No new aggregate phens described. \n This will likely ",
-        "cause problems in further processing. \n Ensure all phenomena",
-        "parameters are described, e.g., especially the 'measure' required",
-        "for matching an aggregation function."
+      cli::cli_inform(c("i" = "In aggregation",
+        "!" = "No new aggregate phens described.",
+        "x" = "This will likely cause problems in further processing.",
+        ">" = paste0("Ensure all phenomena parameters are described, e.g.,",
+          " especially the 'measure' required for matching an aggregation",
+          " function.", collapse = ""
+        ),
+        "*" = "Proposed new phenomena below:"
       ))
-      message("Proposed new phenomena below")
       print(phen_dt_new)
     }
     dt_parse <- list(phens_dt = rphen, f_params = list(agg_params = rp))

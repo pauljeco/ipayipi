@@ -16,8 +16,9 @@ append_phen_data(
   tn = NULL,
   ri = NULL,
   rit = NULL,
-  verbose = verbose,
-  xtra_v = xtra_v,
+  verbose = FALSE,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }

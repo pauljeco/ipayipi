@@ -1,6 +1,6 @@
 Package: ipayipi
-Version: 0.0.5
-Date: 2024-11-05
+Version: 0.0.6
+Date: 2024-12-04
 Title: Logger data processing pipelines
 Author: Paul J Gordijn <pj.gordijn@saeon.nrf.ac.za>
 Maintainer: Paul J Gordijn <pj.gordijn@saeon.nrf.ac.za>
@@ -12,8 +12,8 @@ Description: Functions that can be used to generate time series data
  generic pipeline.
 Depends:
     R (>= 4.1.2),
+    cli,
     data.table,
-    crayon,
     future.apply
 Imports:
     attempt,

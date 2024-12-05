@@ -41,7 +41,9 @@ ipayipi2csv <- function(
   )
 
   if (length(station_files) == 0 && (verbose == TRUE || xtra_v == TRUE)) {
-    cat(crayon::blue(" No station files found in: " %+% ipip_house$ipip_room))
+    cli::cli_inform(c(
+      "!" = "No station files found in: {pipe_house$ipip_room}"
+    ))
   }
 
   # read in each file and export respective tables
@@ -58,9 +60,9 @@ ipayipi2csv <- function(
         if (length(tab_names) == 0 &&
             (verbose == TRUE || xtra_v == TRUE)
         ) {
-          cat(crayon::blue(
-            " No tables matching " %+% wanted_tabs %+% "... \n in station"
-            %+% station_files[z]
+          cli::cli_inform(c(
+            "i" = "In station: {station_files[z]}",
+            " " = "No tables matching: {.var wanted_tabs ==} {wanted_tabs}"
           ))
         }
       }

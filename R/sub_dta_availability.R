@@ -22,8 +22,8 @@
 #' @author Paul J. Gordijn
 #' @export
 dta_availability <- function(
-  input_dir = ".",
   pipe_house = NULL,
+  input_dir = ".",
   phen_names = NULL,
   station_ext = ".ipip",
   gap_problem_thresh_s = 6 * 60 * 60,
@@ -38,6 +38,7 @@ dta_availability <- function(
   prompt = FALSE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   ":=" <- "%chin%" <- NULL
@@ -54,19 +55,22 @@ dta_availability <- function(
   names(slist) <- basename(slist)
   sn <- gsub(paste0(station_ext, "$"), "", basename(slist))
   if (anyDuplicated(sn) > 0) {
-    message("Reading duplicated stations ('stnd_title') not allowed!")
-    message("Refine search keywords using the 'un\\wanted arguments")
-    print(slist[order(sn)])
+    cli::cli_inform(c(
+      "!" = "Reading duplicated stations ({.var stnd_title}) not allowed!",
+      "i" = "Available station file list: \n {slist[order(sn)]}",
+      ">" =
+        "Refine station search using args: {.var wanted} and {.var unwanted}"
+    ))
     return(NULL)
   }
   if (length(slist) == 0) {
-    stop("Refine search parameters---no station files detected.")
+    cli::cli_abort(c("Refine search parameters---no station files detected."))
   }
 
   # check if the plot tbls are present
   sedta <- lapply(seq_along(slist), function(i) {
     ds <- sf_dta_read(pipe_house = pipe_house, tv = "data_summary",
-      station_file = slist[i], tmp = TRUE, xtra_v = xtra_v
+      station_file = slist[i], tmp = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
     )[["data_summary"]]
     if (is.null(ds)) return(NULL)
     ds <- ds[, c("start_dttm", "end_dttm", "stnd_title", "table_name")]
@@ -119,7 +123,7 @@ dta_availability <- function(
   # extract data for gaps ----
   gaps <- lapply(slist, function(x) {
     dta <- sf_dta_read(station_file = x, pipe_house = pipe_house,
-      tv = "gaps", verbose = verbose, xtra_v = xtra_v
+      tv = "gaps", verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
     return(dta$gaps)
   })
@@ -127,16 +131,18 @@ dta_availability <- function(
   # produce gap tables where they are missing
   run_gaps <- slist[sapply(gaps, is.null)]
   lapply(run_gaps, function(x) {
-    open_sf_con(pipe_house = pipe_house, station_file = x)
+    open_sf_con(pipe_house = pipe_house, station_file = x, chunk_v = chunk_v,
+      xtra_v = xtra_v
+    )
   })
   run_gap_gaps <- lapply(run_gaps, function(x) {
     g <- ipayipi::gap_eval(pipe_house = pipe_house, station_file = x,
       gap_problem_thresh_s = gap_problem_thresh_s, event_thresh_s =
         event_thresh_s, meta_events = meta_events,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
     ipayipi::write_station(pipe_house = pipe_house, sf = g, station_file = x,
-      overwrite = TRUE, append = TRUE
+      overwrite = TRUE, append = TRUE, chunk_v = chunk_v
     )
     g$gaps <- g$gaps[problem_gap == TRUE]
     invisible(g$gaps)

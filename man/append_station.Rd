@@ -13,6 +13,7 @@ append_station(
   phen_id = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }

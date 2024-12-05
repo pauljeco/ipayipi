@@ -12,7 +12,7 @@ imbibe_raw_batch(
   col_dlm = NULL,
   dt_format = c("Ymd HMOS", "Ymd HMS", "Ymd IMOSp", "Ymd IMSp", "ymd HMOS", "ymd HMS",
     "ymd IMOSp", "ymd IMSp", "mdY HMOS", "mdY HMS", "mdy HMOS", "mdy HMS", "mdy IMOSp",
-    "mdy IMSp", "dmY HMOS", "dmY HMS", "dmy IMOSp", "dmy IMSp"),
+    "mdy IMSp", "dmY HMOS", "dmY HMS", "dmy HMOS", "dmy HMS", "dmy IMOSp", "dmy IMSp"),
   dt_tz = "Africa/Johannesburg",
   record_interval_type = "continuous",
   remove_prompt = FALSE,

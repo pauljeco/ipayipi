@@ -19,7 +19,7 @@ pipe_process <- function(
 
   # terminte if no pipe_seq
   if (is.null(pipe_seq) || !data.table::is.data.table(pipe_seq)) {
-    message("Warning! pipe_seq required.")
+    cli::cli_warn(c("{.var pipe_seq} argument required!"))
     return(NULL)
   }
   # run basic pipe sequence check

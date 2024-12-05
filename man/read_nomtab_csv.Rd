@@ -23,7 +23,7 @@ nomtab (nomenclature table) file in the 'waiting room' folder.
 \details{
 \itemize{
 \item Searches for the most recently edited nomenclature table csv
-('nomtab.csv') file in the \code{wait_room} directory.
+('aa_nomtab.csv') file in the \code{wait_room} directory.
 \item Checks whether there are any \code{NA} values corresposing to unstandardised
 synonyms of the following fields: 'location', 'station', and a station's
 standard title, that is, 'stnd_title'.

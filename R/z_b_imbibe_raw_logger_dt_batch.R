@@ -47,6 +47,7 @@ imbibe_raw_batch <- function(
     "mdy HMOS",  "mdy HMS",
     "mdy IMOSp",  "mdy IMSp",
     "dmY HMOS", "dmY HMS",
+    "dmy HMOS", "dmy HMS",
     "dmy IMOSp", "dmy IMSp"
   ),
   dt_tz = "Africa/Johannesburg",
@@ -63,7 +64,6 @@ imbibe_raw_batch <- function(
   xtra_v = FALSE,
   ...
 ) {
-  "%+%" <- NULL
   "err" <- NULL
   # get list of data to be imported
   unwanted <- paste0("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps",
@@ -76,22 +76,21 @@ imbibe_raw_batch <- function(
     wanted = wanted
   )
   if (length(slist) == 0) {
-    msg <- "No files to imbibe. Check 'wait_room'."
-    return(message(msg))
+    exit_m <- cli::cli_inform(c(
+      "No '{file_ext_in}' files to imbibe in the pipeline {.var wait_room}.",
+      "i" = "Pipe house 'wait_room' path: {pipe_house$wait_room}.",
+      "i" = "Only flat unencrypted files can be processed."
+    ))
+    return(exit_m)
   }
-  cr_msg <- padr(core_message = paste0(" Reading ", length(slist),
-      " logger files and converting ", collapes = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose = verbose)
-
+  if (verbose || xtra_v) {
+    cli::cli_h1("Reading and converting {length(slist)} file{?s}")
+  }
+  if (fcoff()) xtra_v <- FALSE
   file_name_dt <- future.apply::future_lapply(seq_along(slist), function(i) {
-    cr_msg <- padr(core_message = paste0(" +> ", slist[i], collapes = ""),
-      wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(1, 1)
-    )
-    ipayipi::msg(cr_msg, verbose)
+    if (verbose || xtra_v) cli::cli_h2(c(
+      " " = "{i}: working on {slist[i]}"
+    ))
     if (is.null(file_ext_in)) {
       file_ext_in <- tools::file_ext(slist[i])
       file_ext_in <- paste0(".",
@@ -115,7 +114,7 @@ imbibe_raw_batch <- function(
       xtra_v = xtra_v
     ))
     if (attempt::is_try_error(fl)) {
-      fl$err <- TRUE
+      suppressWarnings((fl$err <- TRUE))
     }
     # save as tmp rds if no error
     if (!fl$err) {
@@ -125,13 +124,14 @@ imbibe_raw_batch <- function(
       # catch for incorrect time import formula
       st_dt <- attempt::attempt(min(fl$ipayipi_data_raw$raw_data$date_time))
       if (attempt::is_try_error(st_dt)) {
-        mcat(crayon::bgBlue(" Error in time format read: check raw data " %+%
-            "and \'dt_format\' function arguments! \n" %+%
-            " Read raw date format example: " %+%
-            fl$ipayipi_data_raw$raw_data$date_time[1]
-        ))
-        mcat(crayon::blue(" If ipayipi is reading the incorrect column for " %+%
-            "info then check \n argument \'data_setup\'."
+        cli::cli_inform(c("!" = "Problem with date-time format read:",
+          "i" = "Check raw data and {.var dt_format} function arguments!",
+          " " = paste0("Your date-time e.g.:",
+            " {fl$ipayipi_data_raw$raw_data$date_time[1]}"
+          ),
+          "i" = paste0("If ipayipi is reading the incorrect column for info ",
+            "then check the {.var data_setup} argument."
+          )
         ))
         # return error table
         return(data.table::data.table(
@@ -160,6 +160,7 @@ imbibe_raw_batch <- function(
       class(fl$ipayipi_data_raw) <- "ipayipi_raw"
       if (!file.exists(dirname(fn_htmp))) dir.create(dirname(fn_htmp))
       saveRDS(fl$ipayipi_data_raw, fn_htmp)
+      if (xtra_v) cli::cli_inform(c(">" = "saved as {fn_htmp}"))
     } else {
       fn_htmp <- NA_character_
       fn <- NA_character_
@@ -169,12 +170,12 @@ imbibe_raw_batch <- function(
       fn_htmp = fn_htmp,
       fp = fp,
       fn = fn,
-      st_dt = st_dt,
-      ed_dt = ed_dt,
+      st_dt = if (exists("st_dt")) st_dt else as.POSIXct(NA_character_),
+      ed_dt = if (exists("ed_dt")) ed_dt else as.POSIXct(NA_character_),
       file_ext_in = file_ext_in
     )
     return(fn_resolve)
-  })
+  }, future.conditions = NULL, future.stdout = NA)
   file_name_dt <- data.table::rbindlist(file_name_dt)
 
   # archive input raw files ----
@@ -183,64 +184,81 @@ imbibe_raw_batch <- function(
   file_name_dt$ofn <- basename(file_name_dt$fp)
   fn_dt_arc <- file_name_dt[err != TRUE]
 
+  # requires non-null raw_room
   if (!is.null(pipe_house$raw_room)) {
-    future.apply::future_lapply(seq_along(fn_dt_arc$yr_mon_end), function(i) {
-      arc_dir <- file.path(pipe_house$raw_room, fn_dt_arc$yr_mon_end[i])
-      if (!dir.exists(arc_dir)) dir.create(arc_dir)
-      file.copy(from = file.path(fn_dt_arc$fp[i]),
-        to = file.path(arc_dir, paste0(gsub(pattern = fn_dt_arc$file_ext_in[i],
-            replacement = "", x = fn_dt_arc$ofn[i]
-          ), "_arcdttm_", as.character(format(Sys.time(), "%Y%m%d_%Hh%Mm%Ss")
-          ), fn_dt_arc$file_ext_in[i], collapse = ""
-        ))
+    arc_dir <- file.path(pipe_house$raw_room, fn_dt_arc$yr_mon_end)
+    dir.create(!arc_dir[file.exists(arc_dir)])
+    file.copy(from = file.path(fn_dt_arc$fp), to = file.path(arc_dir,
+      paste0(vgsub(
+        pattern = fn_dt_arc$file_ext_in, replacement = "", x = fn_dt_arc$ofn
+      ), "_arcdttm_", as.character(format(Sys.time(), "%Y%m%d_%Hh%Mm%Ss")
+      ), fn_dt_arc$file_ext_in, collapse = ""
       )
-    })
+    ))
+    # future.apply::future_lapply(seq_along(fn_dt_arc$yr_mon_end), function(i) {
+    #   arc_dir <- file.path(pipe_house$raw_room, fn_dt_arc$yr_mon_end[i])
+    #   if (!dir.exists(arc_dir)) dir.create(arc_dir)
+    #   file.copy(from = file.path(fn_dt_arc$fp[i]),
+    #     to = file.path(arc_dir, paste0(gsub(pattern = fn_dt_arc$file_ext_in[i],
+    #         replacement = "", x = fn_dt_arc$ofn[i]
+    #       ), "_arcdttm_", as.character(format(Sys.time(), "%Y%m%d_%Hh%Mm%Ss")
+    #       ), fn_dt_arc$file_ext_in[i], collapse = ""
+    #     ))
+    #   )
+    # })
   }
 
   # check for duplicates and make unique integers
-  if (!anyNA.data.frame(fn_dt_arc)) {
+  if (!anyNA.data.frame(fn_dt_arc) && nrow(fn_dt_arc) != 0) {
     split_fn_dt_arc <- split(fn_dt_arc, f = factor(fn_dt_arc$fn))
-    split_fn_dt_arc <-
-      future.apply::future_lapply(split_fn_dt_arc, function(x) {
-        x$rep <- seq_len(nrow(x))
-        return(x)
-      })
+    split_fn_dt_arc <- lapply(split_fn_dt_arc, function(x) {
+      x$rep <- seq_len(nrow(x))
+      return(x)
+    })
     fn_dt_arc <- data.table::rbindlist(split_fn_dt_arc)
     if (substr(file_ext_out, 1, 1) != ".") {
       file_ext_out <- paste0(".", file_ext_out)
     }
     # rename the temp rds files and delete the raw dat files
-    future.apply::future_lapply(seq_along(fn_dt_arc$fn), function(i) {
-      # rename temp file
-      if (file.exists(fn_dt_arc$fn_htmp[i])) {
-        file.copy(from = fn_dt_arc$fn_htmp[i],
-          to = file.path(pipe_house$wait_room,
-            paste0(fn_dt_arc$fn[i], "__", fn_dt_arc$rep[i], file_ext_out)
-          )
-        )
-        unlink(fn_dt_arc$fn_htmp[i], recursive = TRUE)
-      }
-
-      # remove raw file in wait room
-      if (file.exists(fn_dt_arc$fp[i])) file.remove(fn_dt_arc$fp[i])
-
-      # remove dat file in source
-      if (wipe_source) {
-        fr <- gsub(paste0("__*.", fn_dt_arc$file_ext_in[i], "$"),
-          fn_dt_arc$file_ext_in[i], fn_dt_arc$ofn[i]
-        )
-        if (file.exists(fr))  file.remove(fr)
-      }
-    })
+    tex <- fn_dt_arc$fn_htmp
+    ex <- file.path(
+      pipe_house$wait_room,
+      paste0(fn_dt_arc$fn, "__", fn_dt_arc$rep, file_ext_out)
+    )
+    fp <- fn_dt_arc$fp
+    file.copy(tex[file.exists(tex)], ex[file.exists(tex)])
+    unlink(tex[file.exists(tex)], recursive = TRUE)
+    file.remove(fp[file.exists(fp)])
+    if (wipe_source) {
+      fr <- gsub(paste0("__*.", fn_dt_arc$file_ext_in, "$"),
+        fn_dt_arc$file_ext_in, fn_dt_arc$ofn
+      )
+      file.remove(fr[file.exists(fr)])
+    }
   }
-  cr_msg <- padr(core_message = paste0(" imbibed  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
-  if (nrow(file_name_dt[err == TRUE]) > 0) {
-    message("Files could not be processed")
+  if (verbose || xtra_v) cli::cli_h1("")
+  e <- nrow(file_name_dt[err == TRUE])
+  if (e > 0) {
+    cli::cli_inform(c(
+      "{e} of {length(slist)} file{?s} below could not be processed.",
+      "i" = "Ensure th{?is/ese} {e} file{?s} are readable flat files;",
+      " " = "to ignore files include these search keys in {.var unwanted},",
+      "i" = "date-time values and formats must be readable, and",
+      "i" = "appropriate {.var data_setup} options must be provided."
+    ))
     print(file_name_dt[err == TRUE])
   }
-  invisible(fn_dt_arc$fn)
+  if (verbose || xtra_v && nrow(file_name_dt[err == FALSE]) > 0) {
+    cli::cli_inform(c(
+      "What next?",
+      "*" = paste0("Imbibed files are now in \'R\' format and are renamed with",
+        " the extension \'.ipr\'."
+      ),
+      "v" = "\'.ipr\' files are ready for standardisation.",
+      ">" = "Begin file standardisation using functions:",
+      " " = "1) {.var header_sts()}, and next,",
+      " " = "2) {.var phenomena_sts()}."
+    ))
+  }
+  invisible(fn_dt_arc)
 }

@@ -134,19 +134,19 @@ dt_join <- function(
   args <- c(j_args, list(x_tbl = x_tbl, y_tbl = y_tbl, fuzzy = fuzzy,
     time_seq = time_seq, xtra_v = xtra_v
   ))
-  ipayipi::msg(cat(crayon::bgWhite(" Pre-join x & y data : ")), xtra_v)
   if (xtra_v) {
-    ipayipi::msg(cat(crayon::bgWhite(" - x table ")), xtra_v)
+    cli::cli_inform(c("i" = "Pre-join x & y data :"))
+    cli::cli_inform(c("i" = " - x table "))
     print(head(x_tbl))
-    ipayipi::msg(cat(crayon::bgWhite(" - y table ")), xtra_v)
+    cli::cli_inform(c("i" = " - y table "))
     print(head(y_tbl))
   }
   dt_working <- do.call(what = "mhlanga", args = args)
-  ipayipi::msg(cat(crayon::bgWhite("Post-join data")), xtra_v)
   if (xtra_v) {
-    ipayipi::msg(cat(crayon::bgWhite(" Head: ")), xtra_v)
+    cli::cli_inform(c("i" = "Post-join data :"))
+    cli::cli_inform(c("i" = " - head "))
     print(head(dt_working))
-    ipayipi::msg(cat(crayon::bgWhite(" Tail: ")), xtra_v)
+    cli::cli_inform(c("i" = " - tail "))
     print(tail(dt_working))
   }
   # dttm for ppsij

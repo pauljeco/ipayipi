@@ -7,7 +7,7 @@
 clean_param_eval(
   phens = NULL,
   w = 21,
-  mad = 3,
+  madf = 3,
   align = "left",
   seg = NA_character_,
   cush = TRUE,
@@ -30,7 +30,7 @@ clean_param_eval(
 
 \item{w}{Total window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
 
-\item{mad}{Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
+\item{madf}{Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.}
 
 \item{align}{One of the following character options following 'data.table' lateral syntax framework: 1) \bold{'right'} (the default) evaluates the current value, on the right, based on preceeding values, falling to the left; option \bold{'left'} does the opposite evaluting the values to the right; option \bold{centre} places the evauated value in middle of the total window size provided by \bold{w} (option 'centre' is 'left' biased for odd window sizes). This argument is parsed to 'data.table' \code{frollapply}.}
 

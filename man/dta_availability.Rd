@@ -5,8 +5,8 @@
 \title{Plot the coverage of ipayipi station files}
 \usage{
 dta_availability(
-  input_dir = ".",
   pipe_house = NULL,
+  input_dir = ".",
   phen_names = NULL,
   station_ext = ".ipip",
   gap_problem_thresh_s = 6 * 60 * 60,
@@ -21,13 +21,14 @@ dta_availability(
   prompt = FALSE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }
 \arguments{
-\item{input_dir}{Defaults to the working diretory. If the \code{pipe_house} arument is provided then the working directory defaults to \code{pipe_house$ipip_room}.}
-
 \item{pipe_house}{List of pipeline directories. \strong{See} \code{ipayipi::ipip_house()} \strong{for details}.}
+
+\item{input_dir}{Defaults to the working diretory. If the \code{pipe_house} arument is provided then the working directory defaults to \code{pipe_house$ipip_room}.}
 
 \item{phen_names}{Vector of phenomena names. Defaults to \code{NULL} whereby all phenomena gaps are included. Logger gaps are always included --- see the 'gap' table.}
 

@@ -62,8 +62,11 @@ dta_flat_pull <- function(
   )
   sn <- gsub(paste0(file_ext, "$"), "", basename(slist))
   if (anyDuplicated(sn) > 0) {
-    message("Reading duplicated stations ('stnd_title') not allowed!")
-    message("Refine search keywords using the 'un\\wanted arguments")
+    cli::cli_inform(c("While querying stations",
+      "!" = "Reading duplicated stations {.var stnd_title} not allowed!",
+      ">" =
+        "Refine search keywords using {.var wanted} and {.var unwanted} args."
+    ))
     print(slist[order(sn)])
     return(NULL)
   }
@@ -85,7 +88,28 @@ dta_flat_pull <- function(
   })
   names(t) <- slist
   t <- t[!sapply(t, is.null)]
-  t <- t[sapply(t, function(x) phen_name %in% names(x[[1]]$indx$dta_n))]
+  if (length(t) == 0) {
+    cli::cli_abort(c(
+      "i" = "No matching table names in stations! Available stations below:",
+      print(slist),
+      "success" = "Check the station tables or table name spelling!"
+    ))
+  }
+  t <- t[sapply(t, function(x) {
+    if (phen_name %in% names(x[[1]]$indx$dta_n)) {
+      return(TRUE)
+    } else {
+      sf <- gsub(paste0(".*/sf/|", paste0(file_ext, ".*")), "", x[[1]]$fs[1])
+      cli::cli_warn(c("i" = paste0("No match for {phen_name} in station",
+          " \'{sf}\', table \'{x[[1]]$indx$table_name}\'!"
+        ), x = "This station/table cannot be queried!"
+      ))
+      return(FALSE)
+    }
+  })]
+  if (length(t) == 0) {
+    cli::cli_abort(c("No matching phenomena in all station tables!"))
+  }
 
   # prep to join datasets together
   # check dataset ri's
@@ -106,7 +130,9 @@ dta_flat_pull <- function(
   mn$dur_chk <- mn$dur == mn$dur[1]
   mn[, stnd_title := gsub(paste0(file_ext, "$"), "", basename(names(t)))]
   if (!all(mn$dur_chk)) {
-    ipayipi::msg("Unequal date-time starting points. Removing station tables: ")
+    cli::cli_inform(c(
+      "!" = "Unequal date-time starting points. Removing station tables:"
+    ))
     names(mn)[1] <- "Start_dttm"
     print(mn)
     t <- t[mn$dur_chk]
@@ -124,7 +150,7 @@ dta_flat_pull <- function(
   # harvest gap info for series
   g <- lapply(seq_along(t), function(i) {
     sfc <- ipayipi::open_sf_con(
-      station_file = file.path(input_dir, names(t)[i])
+      station_file = file.path(input_dir, names(t)[i]), chunk_v = chunk_v
     )
     if (!"gaps" %chin% names(sfc)) stop("Please run \`gap_eval\` for stations.")
     g <- sf_dta_read(sfc = sfc, tv = "gaps", tmp = TRUE)[["gaps"]]

@@ -38,7 +38,7 @@ p_step <- function(
   if (
     !any(f %in% c("dt_agg", "dt_calc", "dt_clean", "dt_harvest", "dt_join"))
   ) {
-    stop(paste0("Unrecognised function: ", f))
+    cli::cli_abort("Unrecognised function: {f}")
   }
   # other set up ----
   if (f %in% c("dt_harvest")) {

@@ -19,7 +19,7 @@
 meta_to_station <- function(
   pipe_house = NULL,
   input_dir = NULL,
-  meta_file = "event_db",
+  meta_file = "aa_event_db",
   file_ext = ".rmds",
   station_ext = ".ipip",
   in_station_meta_name = "meta_events",
@@ -36,7 +36,7 @@ meta_to_station <- function(
   if (is.character(meta_file)) {
     meta_file <- file.path(input_dir, paste0(meta_file, file_ext))
     if (!file.exists(meta_file)) {
-      stop("The events metadata database does not exist!")
+      cli::cli_abort("The events metadata database does not exist!")
     }
     edb <- readRDS(paste0(meta_file))
   }
@@ -45,41 +45,35 @@ meta_to_station <- function(
     file_ext = station_ext, wanted = wanted, unwanted = unwanted,
     prompt = FALSE, recurr = FALSE
   )
-  cr_msg <- padr(core_message = paste0(
-    " Adding metadata to ", length(slist), " stations", collapes = ""
-  ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-  force_extras = FALSE, justf = c(0, 0)
+  if (length(slist) == 0) cli::cli_abort(
+    "No station files detected in the {.var ipip_room}: {pipe_house$ipip_room}"
   )
-  ipayipi::msg(cr_msg, verbose)
+  if (verbose || xtra_v || chunk_v) cli::cli_h1(
+    "Adding metadata to {length(slist)} station{?s}"
+  )
   r <- lapply(slist, function(x) {
     sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file = x,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, chunk_v = chunk_v
     )
     sfn <- gsub(pattern = station_ext, replacement = "", x = x)
     sfn <- basename(sfn)
     mdta <- edb[which(edb[[stnd_title_col_name]] %in% sfn[1])]
     # write event metadata to temporary station file
     unlink(sfc[in_station_meta_name], recursive = TRUE)
-    ipayipi::msg("Chunking logger event data", chunk_v)
+    if (chunk_v) cli::cli_inform(c(" " = "Chunking logger event data"))
     ipayipi::sf_dta_wr(
       dta_room = file.path(dirname((sfc[1])), in_station_meta_name),
       dta = mdta, overwrite = TRUE, tn = in_station_meta_name,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, chunk_v = chunk_v
     )
     write_station(pipe_house = pipe_house, station_file = x,
-      overwrite = TRUE, append = FALSE
+      overwrite = TRUE, append = FALSE, chunk_v = chunk_v
     )
-    cr_msg <- padr(core_message = paste0(
-      basename(x), " done ...", collapes = ""
-    ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(-1, 2)
-    )
-    ipayipi::msg(cr_msg, verbose)
+    if (verbose || xtra_v || chunk_v) cli::cli_inform(c(
+      "v" = "{basename(x)}, done ..."
+    ))
   })
   rm(r)
-  cr_msg <- padr(core_message = paste0(" Metadata added  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  return(ipayipi::msg(cr_msg, verbose))
+  if (verbose || xtra_v || chunk_v) cli::cli_h1("")
+  invisible()
 }

@@ -6,7 +6,7 @@
 #' @param file name of the csv file to be read as the nomenclature table.
 #' @details
 #'  - Searches for the most recently edited nomenclature table csv
-#'   ('nomtab.csv') file in the `wait_room` directory.
+#'   ('aa_nomtab.csv') file in the `wait_room` directory.
 #'  - Checks whether there are any `NA` values corresposing to unstandardised
 #'   synonyms of the following fields: 'location', 'station', and a station's
 #'   standard title, that is, 'stnd_title'.
@@ -37,10 +37,12 @@ read_nomtab_csv <- function(
   ...
 ) {
   if (is.null(file)) {
-    nomlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
-      ".csv", wanted = "nomtab"
+    nomlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room,
+      file_ext = ".csv", wanted = "aa_nomtab"
     )
-    if (length(nomlist) < 1) stop("There is no nomtab file in the wait_room!")
+    if (length(nomlist) < 1) {
+      cli::cli_abort(c("There is no nomtab file in the wait_room!"))
+    }
     nom_dts <- lapply(nomlist, function(x) {
       mtime <- file.info(file.path(pipe_house$wait_room, x))$mtime
       invisible(mtime)
@@ -57,15 +59,15 @@ read_nomtab_csv <- function(
   nomtab <- data.table::fread(file.path(pipe_house$wait_room, file),
     header = TRUE
   )
-  ck_cols <- c("location", "station", "stnd_title")
-  cans <- sum(
-    sapply(nomtab[, ck_cols, with = FALSE], function(x) sum(is.na(x)))
-  )
-  if (cans > 0) {
-    message("There are unconfirmed identities in the header nomenclature!")
-    message("Please edit the csv file to remove NAs.")
-    print(nomtab[rowSums(is.na(nomtab[, ck_cols, with = FALSE])) > 0])
-  }
+  # ck_cols <- c("location", "station", "stnd_title")
+  # cans <- sum(
+  #   sapply(nomtab[, ck_cols, with = FALSE], function(x) sum(is.na(x)))
+  # )
+  # if (cans > 0) {
+  #   message("There are unconfirmed identities in the header nomenclature!")
+  #   message("Please edit the csv file to remove NAs.")
+  #   print(nomtab[rowSums(is.na(nomtab[, ck_cols, with = FALSE])) > 0])
+  # }
 
   nomtab <- transform(nomtab,
     uz_station = as.character(nomtab$uz_station),
@@ -86,6 +88,6 @@ read_nomtab_csv <- function(
     !grepl(pattern = "raw_", x = nomtab$table_name),
     paste0("raw_", nomtab$table_name), nomtab$table_name
   )
-  saveRDS(nomtab, file.path(pipe_house$wait_room, "nomtab.rns"))
+  saveRDS(nomtab, file.path(pipe_house$wait_room, "aa_nomtab.rns"))
   invisible(nomtab)
 }

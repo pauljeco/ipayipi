@@ -15,6 +15,7 @@ phenomena_sts(
   file_ext_in = ".iph",
   file_ext_out = ".ipi",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 )
 }

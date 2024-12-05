@@ -36,12 +36,12 @@ dta_flat_push <- function(
 
   # check uniqueness of station names
   if (length(unique(names(slist))) != length(slist)) {
-    warning("Non-unique station names---can't process!")
+    cli::cli_warn("Non-unique station names---can't process!")
     return(NULL)
   }
   # check all stations exist
   if (any(!file.exists(gsub("^\\./", "", slist), recursive = TRUE))) {
-    warning("Missing station in set directory!")
+    cli::cli_warn("Missing station in set directory!")
     return(NULL)
   }
 

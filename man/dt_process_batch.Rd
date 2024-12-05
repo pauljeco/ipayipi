@@ -18,6 +18,7 @@ dt_process_batch(
   unwanted_tbls = "_tmp",
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = chunk_v,
   ...
 )
 }

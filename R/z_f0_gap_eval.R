@@ -176,7 +176,7 @@ gap_eval <- function(
   gaps <- gaps[, gid := seq_len(.N), by = table_name]
 
   # write gaps to temporary station file
-  ipayipi::msg("Chunking logger gap data", chunk_v)
+  if (chunk_v) cli::cli_inform(c(" " = "Chunking logger gap data"))
   file.remove(sfc["gaps"], recursive = TRUE)
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
@@ -198,7 +198,7 @@ gap_eval <- function(
 
   # write gaps to temporary station file
   file.remove(sfc["gaps"], recursive = TRUE)
-  ipayipi::msg("Chunking logger phen gap data", chunk_v)
+  if (chunk_v) cli::cli_inform(c(" " = "Chunking logger phen gap data"))
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
     verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
@@ -389,14 +389,14 @@ gap_eval <- function(
     gaps <- gaps[, gid := seq_len(.N), by = "table_name"]
     # write gaps to temporary station file
     file.remove(sfc["gaps"], recursive = TRUE)
-    ipayipi::msg("Chunking event gap data", chunk_v)
+    if (chunk_v) cli::cli_inform(c(" " = "Chunking event gap data"))
     ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
       dta = gaps, overwrite = TRUE, tn = "gaps",
       verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   }
   write_station(pipe_house = pipe_house, station_file = station_file,
-    overwrite = TRUE, append = FALSE
+    overwrite = TRUE, append = FALSE, chunk_v = chunk_v
   )
   invisible(list(gaps = gaps))
 }

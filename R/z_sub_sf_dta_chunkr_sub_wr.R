@@ -27,7 +27,9 @@ chunkr_sub_wr <- function(
   ...
 ) {
   "%ilike%" <- "date_time" <- "indx" <- NULL
-  ipayipi::msg(cat(crayon::silver("chunkr_sub_wr()")), chunk_v)
+  if (chunk_v) cli::cli_inform(c(
+    "i" = "Writing chunks: {.var chunkr_sub_wr()}"
+  ))
   dir.create(dta_room, showWarnings = FALSE, recursive = TRUE)
   # temp dir for chunking data before writing to the dta_room
   tmp_cdir <- tempfile(pattern = "cwrite")
@@ -39,7 +41,7 @@ chunkr_sub_wr <- function(
   lapply(dta_sets, function(dta) {
     lapply(write_tbl$indx, function(x) {
       wi <- write_tbl[indx %in% x]
-      if (nrow(wi) != 1) warning(cat(crayon::red("Corrupt chunk index file!")))
+      if (nrow(wi) != 1) cli::cli_warn(c("Corrupt chunk index file!"))
       d <- dta[date_time >= min(wi$chnk_fl)][date_time < max(wi$chnk_cl)]
       tmp_cdiri <- file.path(tmp_cdir, basename(tempfile()))
       dir.create(tmp_cdiri)
@@ -49,7 +51,7 @@ chunkr_sub_wr <- function(
   # write chunked data to directory
   wri <- lapply(write_tbl$indx, function(x) {
     wi <- write_tbl[indx %in% x]
-    if (nrow(wi) != 1) warning(cat(crayon::red("Corrupt chunk index file!")))
+    if (nrow(wi) != 1) cli::cli_warn(c("Corrupt chunk index file!"))
     # read + merge all files with same chunk index
     fs <- list.files(path = tmp_cdir, pattern = paste0("i_", sprintf(fmf, x)),
       recursive = TRUE, full.names = TRUE
@@ -90,13 +92,13 @@ chunkr_sub_wr <- function(
       dsq <- dtsq[!date_time %in% d$date_time]
       d <- rbind(d, dsq, fill = TRUE)
       if (rit %in% "continuous" && n != nrow(dtsq)) {
-        ipayipi::msg(cat(crayon::yellow(
-          " Missing chunk data --- time-series integrity questioned!"
-        )), chunk_v)
-        ipayipi::msg(cat(crayon::yellow(
-          " Results from gaps in continuous data ... filled with NA\'s"
-        )), chunk_v)
-        ipayipi::msg(cat(crayon::yellow(dta_room)), chunk_v)
+        if (chunk_v) {
+          cli::cli_inform(c(
+            "i" = "Missing chunk data in continuous series.",
+            " " = "Gaps in series filled with NA",
+            " " = "Working in this directory: {dta_room}."
+          ))
+        }
       }
       wi$n_pot <- nrow(dtsq)
     } else {

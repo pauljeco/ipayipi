@@ -31,6 +31,7 @@ dt_agg <- function(
   gaps_phens = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- ".N" <- ":=" <- ".SD" <- "." <- NULL
@@ -260,7 +261,7 @@ dt_agg <- function(
     ipayipi::sf_dta_chunkr(rit = "continuous", ri = agg_intv[ri],
       dta_room = file.path(dirname(sfc)[1], names(agg_intv[ri])),
       chunk_i = NULL, rechunk = FALSE, dta_sets = list(dta),
-      tn = names(agg_intv[ri]), verbose = verbose, xtra_v = xtra_v
+      tn = names(agg_intv[ri]), verbose = verbose, chunk_v = chunk_v
     )
     return(agg_intv[ri])
   })

@@ -65,16 +65,18 @@ pipe_seq <- function(
     # harvesting must be first step
     pij <- pii[dt_n == 1 & dtp_n == 1 & !f %in% "dt_harvest"]
     pij <- sapply(seq_along(nrow(pij)[!nrow(pij) %in% 0]), function(ki) {
-      message(paste0("The first step (\"dtp_n\" = 1) of each table ",
-        "processing stage (\"dt_n\") must begin with harvesting data.",
-        collapse = ""
+      cli::cli_inform(c("i" = "Regarding check for data processing:",
+        "!" = paste0("The first step ({.var dtp_n = 1}) of each ",
+          "processing stage ({.var dt_n}) must begin by harvesting data.",
+          collapse = ""
+        ),
+        ">" = "Use the {.var dt_harvest()} function.",
+        "*" = paste0("When {.var dtp_n > 1} the pipeline absorbs data ",
+          "from the end the last step.", collapse = ""
+        )
       ))
-      message("Use \"dt_harvest()\" function.")
-      message(paste0("When \"dt_n\" > 1 the pipeline absorbs data ",
-        "from the end of stage one processing (\"dt_n\" == 1).",
-        collapse = ""
-      ))
-      stop("Harvest error", call. = FALSE)
+      cli::cli_abort(c("Harvest error"))
+      #stop("Harvest error", call. = FALSE)
     })
 
     # check time_intervals
@@ -82,10 +84,11 @@ pipe_seq <- function(
     pij <- pii[!is.na(time_interval)]$time_interval
     pijz <- sapply(
       seq_along(unique(pij))[!seq_along(unique(pij)) %in% 1], function(x) {
-        m <- paste0("More than one \'time_interval\' in stage (n) ", i,
-          ": ", paste0(unique(pij), collapse = ", "), collapse = ""
-        )
-        stop(m, call. = FALSE)
+        cli::cli_abort(c(paste0(
+          "More than one {.var time_interval} in stage (n) {i}",
+          ": {unique(pij)}", collapse = ", "
+        )))
+        #stop(m, call. = FALSE)
       }
     )
     if (length(pij) > 0) pii$time_interval <- pii$time_interval[1]
@@ -95,10 +98,10 @@ pipe_seq <- function(
     pij <- pii[!is.na(output_dt)]$output_dt
     pijt <- sapply(
       seq_along(unique(pij))[!seq_along(unique(pij)) %in% 1], function(x) {
-        m <- paste0("More than one \'output_dt\' in stage (n) ", i,
-          ": ", paste0(unique(pij), collapse = ", "), collapse = ""
-        )
-        warning(m, call. = FALSE)
+        cli::cli_warn(paste0("More than one {.var output_dt} in stage (n) ",
+          "{i}: ", paste0(unique(pij), collapse = ", "), collapse = ""
+        ))
+        #warning(m, call. = FALSE)
         return(pij[1])
       }
     )

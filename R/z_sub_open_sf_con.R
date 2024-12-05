@@ -29,7 +29,7 @@ open_sf_con <- function(
   chunk_v = FALSE,
   ...
 ) {
-  "%ilike%" <- "table_name" <- "%+%" <- NULL
+  "%ilike%" <- "table_name" <- NULL
   if (!is.null(pipe_house)) {
     sf_dir <- dirname(station_file)
     sf_dir <- sub("^\\.", "", sf_dir)
@@ -42,9 +42,7 @@ open_sf_con <- function(
   }
 
   if (!file.exists(station_file) && !is.null(pipe_house)) {
-    ipayipi::msg(cat(crayon::yellow("Error: no station file detected!")),
-      xtra_v
-    )
+    cli::cli_warn(c("This station file {station_file} was not detected!"))
     return(NULL)
   }
 
@@ -59,9 +57,14 @@ open_sf_con <- function(
   if (!tmp || !sf_tmp_ex) {
     sfn <- names(readRDS(station_file))
     if (!is.null(tv)) sfn <- sfn[sfn %ilike% tv]
-    mcat(crayon::silver(" Extracting data: \n"), xtra_v)
+    if (chunk_v) {
+      cli::cli_inform(c(" " = "Chunking data ...",
+        " " = "Extracting station file data for rapid read/write:",
+        "i" = "Station file: {station_file}", " " = "Extracting to: {sf_tmp}"
+      ))
+    }
     lapply(sfn, function(x) {
-      mcat(crayon::silver(station_file %+% ": " %+% x %+% ". "), xtra_v)
+      if (chunk_v) cli::cli_inform(c("*" = "table/data: {x}"))
       sfx <- readRDS(station_file)[[x]]
       # chunk data ----
       ds <- NULL

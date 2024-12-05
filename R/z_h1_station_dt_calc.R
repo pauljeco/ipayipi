@@ -26,7 +26,7 @@ dt_calc <- function(
   ...
 ) {
   "%ilike%" <- NULL
-  "table_name" <- NULL
+  "table_name" <- "phen" <- "gap_type" <- "gap_start" <- "gap_end" <- NULL
 
   # read in the available data ----
   sfcn <- names(sfc)
@@ -48,20 +48,19 @@ dt_calc <- function(
     ng$table_name <- ppsij$output_dt[1]
   }
   # create station object for calc parsing ----
-  station <- gsub(
-    paste(dirname(station_file), station_file_ext, "/", sep = "|"),
-    "", station_file
-  )
-  ipayipi::msg(crayon::bgWhite(paste0(" Calc station:  ", station, " ")),
-    xtra_v
-  )
+  ssub <- paste(dirname(station_file), station_file_ext, "/", sep = "|")
+  ssub <- gsub("^['.']['|']", "", ssub)
+  station <- gsub(ssub, "", station_file)
+  if (xtra_v) cli::cli_inform(c("i" = "Calc station: {station}."))
 
   # eindx filter
   dta_in <- dt_dta_filter(dta_link = dta_in, ppsij = ppsij)
   # open data ----
   dt <- dt_dta_open(dta_link = dta_in[[1]])
-  ipayipi::msg(cat(crayon::bgWhite(" Pre-calc data ")), xtra_v)
-  if (xtra_v) print(head(dt))
+  if (xtra_v) {
+    cli::cli_inform(c("i" = "Pre-calc data:"))
+    print(head(dt))
+  }
 
   # organise f_params ----
   # extract ipip arguments from the seperate changes
@@ -100,26 +99,37 @@ dt_calc <- function(
   eval_f <- function(fx) {
     attempt::try_catch(eval(parse(text = paste0(fx, collapse = ""))))
   }
-  ipayipi::msg(cat(crayon::bgWhite(" Calc data.table syntax: ")), xtra_v)
-  ipayipi::msg(cat(crayon::cyan(f_params), sep = "\n "), xtra_v)
+  if (xtra_v) {
+    cli::cli_inform(c("i" =
+        "Calc data.table syntax:", paste0(f_params, sep = "\n ")
+    ))
+  }
   dte <- list(attempt::attempt(eval_f(f_params), silent = TRUE))
   if (attempt::is_try_error(dte[[1]])) {
     err <- dte[[1]][1]
     known_err <- "only 0's may be mixed with negative subscripts"
     if (!err %ilike% known_err && xtra_v && nrow(dt) > 0) print(dte[[1]][1])
-    if (err %ilike% " not found" && xtra_v) {
-      message(cat(crayon::blue("Error may be due to an attempt to perform "),
-        crayon::blue("an operation on a variable/phen\n introduced in chain"),
-        crayon::blue(", begin a new \'calc\' step to work on the new phen."),
-        "\n", sep = ""
-      ))
+    if (err %ilike% " not found|length of" && xtra_v) {
+      cli::cli_inform(c("!" = paste0(
+        "Failure to calculate in data.table may be due ",
+        "to an attempt to perform an operation on a variable OR phen",
+        " introduced in single chain."
+      ), ">" = paste0("To solve this begin a new \'calc\' step (chain) to work",
+        " on the new phen."
+      ), ">" =
+        "OR ideally call the phen name in {.var data.table} syntax like:",
+      " " = ".SD[[\'phen_name\']]",
+      ">" = "OR ideally use data.table operators in one chain:",
+      " " = "{.var .SD} and {.var .SDcols = c(phen_name)}"))
     }
     dte <- list(NULL)
   }
   dt_working <- dte
   names(dt_working) <- "dt_working"
-  ipayipi::msg(cat(crayon::bgWhite(" Post-calc data : ")), xtra_v)
-  if (xtra_v) print(head(dt_working[["dt_working"]]))
+  if (xtra_v) {
+    cli::cli_inform(c("i" = "Post-calc data :"))
+    print(head(dt_working[["dt_working"]]))
+  }
 
   # gap info ----
   g <- sf_dta_read(sfc = sfc, tv = "gaps")[["gaps"]]
@@ -147,7 +157,6 @@ dt_calc <- function(
     d <- dta_sets[[dsi]]
     if (!data.table::is.data.table(d)) d <- unlist(d, recursive = TRUE)
     n <- names(dta_sets)[dsi]
-    ipayipi::msg("Chunking data", chunk_v)
     sf_dta_wr(dta_room = file.path(dirname((sfc[1])), n[1]),
       dta = d, overwrite = TRUE, tn = n[1], ri = ppsij[1]$time_interval,
       verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v

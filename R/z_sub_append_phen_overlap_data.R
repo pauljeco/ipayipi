@@ -34,7 +34,8 @@ append_phen_overlap_data <- function(
   overwrite_sf = FALSE,
   sf_eindx = NULL,
   verbose = FALSE,
-  xtra_v = xtra_v,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "date_time" <- "%ilike%" <- "phen_name" <- "d1" <- "d2" <- "table_name" <-
@@ -70,7 +71,7 @@ append_phen_overlap_data <- function(
       nd_max > sf_eindx$indx$mn
     )) {
       ipayipi::sf_dta_chunkr(dta_room = dta_room, dta_sets = list(ndt), tn = tn,
-        ri = ri, rit = rit, verbose = verbose, xtra_v = xtra_v
+        ri = ri, rit = rit, verbose = verbose, chunk_v = chunk_v
       )
       sfo_dttms <- data.table::data.table(
         sfo_min = NULL, sfo_max = NULL
@@ -318,7 +319,7 @@ append_phen_overlap_data <- function(
     names(dta_sets) <- basename(fsi)
     oindxr <- ipayipi::sf_dta_chunkr(dta_room = dta_room, dta_sets = dta_sets,
       tn = tn, ri = ri, rit = rit, verbose = verbose,
-      xtra_v = xtra_v
+      chunk_v = chunk_v
     )
     sfo_dttms <- data.table::data.table(
       sfo_min = oindxr$mn, sfo_max = oindxr$mx

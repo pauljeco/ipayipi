@@ -2,7 +2,7 @@
 #' @description The default filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
 #' @param phens List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.
 #' @param w Total window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
-#' @param mad Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
+#' @param madf Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
 #' @param align One of the following character options following 'data.table' lateral syntax framework: 1) \bold{'right'} (the default) evaluates the current value, on the right, based on preceeding values, falling to the left; option \bold{'left'} does the opposite evaluting the values to the right; option \bold{centre} places the evauated value in middle of the total window size provided by \bold{w} (option 'centre' is 'left' biased for odd window sizes). This argument is parsed to 'data.table' `frollapply`.
 #' @param cush Logical indicating whether to prevent NAs at data start and end dates owing to window/filter alignment. `TRUE` will \bold{cush}ion data start and ends where necessary by adjust window alignment properties (within segments). `FALSE` does not prevent NA values.
 #' @param seg Vector of station data table names that contain values that will be used to slice data series into segments for independent outlier detection runs. Values don't have to correspond to segment numbers---segments are orgaised within this function. If `NULL` (default) the series is treated as one segment. An option here is the 'logg_interfere' table. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
@@ -24,7 +24,7 @@
 clean_param_eval <- function(
   phens = NULL,
   w = 21,
-  mad = 3,
+  madf = 3,
   align = "left",
   seg = NA_character_,
   cush = TRUE,
@@ -46,7 +46,7 @@ clean_param_eval <- function(
 
   # default data.tableish arguments
   d_args <- list(clean_f = "hampel", phens = "NULL", seg = "NULL",
-    cush = TRUE, na_t = 0.75, w = 21, mad = 3, tighten = 0.65, align = "left",
+    cush = TRUE, na_t = 0.75, w = 21, madf = 3, tighten = 0.65, align = "left",
     owrite = TRUE
   )
   p_args <- list(station_file = "NULL", f_params = NULL, ppsij = "NULL",
@@ -76,12 +76,12 @@ clean_param_eval <- function(
   if (is.vector(phens)) phens <- list(phens)
   #if (is.vector(clean_f)) clean_f <- list(clean_f)
   if (is.vector(seg)) seg <- list(seg)
-  if (is.vector(mad)) mad <- list(mad)
+  if (is.vector(madf)) madf <- list(madf)
   if (is.vector(align)) align <- list(align)
   args <- data.table::as.data.table(args)
   if (!is.null(phens)) args$phens <- phens
   if (!is.null(seg)) args$seg <- seg
-  if (!is.null(mad)) args$mad <- mad
+  if (!is.null(madf)) args$madf <- madf
   if (!is.null(align)) args$align <- align
 
   #args$clean_f <- clean_f
@@ -116,7 +116,6 @@ clean_param_eval <- function(
   z <- lapply(ppsij$f_params, function(x) {
     eval(parse(text = sub("^~", "expression", x)))
   })
-  names(z[[2]])
 
   # read phens_dt ----
   phens_dt <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
@@ -128,19 +127,16 @@ clean_param_eval <- function(
   z <- lapply(z, function(x) {
     pn <- phens_dt[phen_name %ilike% x$phens][var_type %in% "num"]
     if (nrow(pn) > 1) {
-      ipayipi::msg(x = cat(crayon::blue(
-        " Note multiple phen name matches. All will be ",
-        "\'cleaned\'. See matches below... ", sep = ""
-      )))
-      cat(paste0(crayon::blue(x$phens, sep = ", ")), "\n")
+      cli::cli_inform(c("i" = "While assessing phenomena for 'cleaning'",
+        "!" = "Multiple phen name matches. All will be \'cleaned\'!",
+        "i" = "Phen matches:", "*" = "{x$phens}",
+        ">" = "Please refine the phen name search keys if necessary ..."
+      ))
       print(x)
-      cat(crayon::blue("Please refine the phen name search keys" %+%
-            " if necessary ..."
-        ), "\n"
-      )
     }
     x$phens <- pn$phen_name
     return(x)
   })
+  # make phen dt
   return(NULL)
 }

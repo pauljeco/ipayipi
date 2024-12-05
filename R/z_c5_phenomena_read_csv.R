@@ -16,9 +16,16 @@ phenomena_read_csv <- function(
     ...) {
   if (is.null(file)) {
     phenlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
-        ".csv", wanted = "phentab"
+        ".csv", wanted = "aa_phentab"
     )
-    if (length(phenlist) < 1) stop("There is no nomtab file in the wait_room!")
+    if (length(phenlist) < 1) {
+      cli::cli_abort(c(
+        "!" =
+          "No phentab file ('aa_phentab_YYYYMMDD_HHMM.csv') in the wait_room!",
+        "i" = "Searching for 'aa_phentab_YYYYMMDD_HHMM.csv' here:",
+        " " = "{pipe_house$wait_room}"
+      ))
+    }
     phen_dts <- lapply(phenlist, function(x) {
       mtime <- file.info(file.path(pipe_house$wait_room, x))$mtime
       invisible(mtime)
@@ -33,7 +40,7 @@ phenomena_read_csv <- function(
     file <- names(phen_dts[which(phen_dts == max(phen_dts))])
   }
   if (!file.exists(file.path(pipe_house$wait_room, file))) {
-    stop("File not found!")
+    cli::cli_abort(c("File not found!"))
   }
   phentab <- read.csv(file.path(pipe_house$wait_room, file))
   cans <- sum(
@@ -41,10 +48,6 @@ phenomena_read_csv <- function(
       ], function(x) sum(is.na(x))
     )
   )
-  if (cans > 0) {
-    message("There are unconfirmed identities in the nomenclature!")
-    message("Please edit the csv file to remove NAs.")
-  }
   if (cans == 0) {
     suppressMessages(phentab <- data.table::data.table(
       phid = as.integer(phentab$phid),
@@ -62,7 +65,7 @@ phenomena_read_csv <- function(
       sensor_id = as.character(phentab$sensor_id),
       notes = as.character(phentab$notes)
     ))
-    saveRDS(phentab, file.path(pipe_house$wait_room, "phentab.rps"))
+    saveRDS(phentab, file.path(pipe_house$wait_room, "aa_phentab.rps"))
   }
   invisible(phentab)
 }

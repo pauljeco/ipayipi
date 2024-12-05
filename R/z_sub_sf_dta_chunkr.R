@@ -33,7 +33,9 @@ sf_dta_chunkr <- function(
 ) {
   ":=" <- "." <- "%ilike%" <- "chnk_fl" <- "chnk_cl" <- "date_time" <-
     "nchnk_fl" <- "nchnk_cl" <- "d1" <- "d2" <- "dta_new" <- NULL
-  ipayipi::msg(cat(crayon::silver("sf_dta_chunkr()")), chunk_v)
+  if (chunk_v) {
+    cli::cli_inform(c(">" = "Chunking data with {.var sf_dta_chunkr()}"))
+  }
   # open file indx and setup ----
   if (file.exists(file.path(dta_room, "aindxr"))) {
     indx <- readRDS(file.path(dta_room, "aindxr"))
@@ -95,7 +97,7 @@ sf_dta_chunkr <- function(
     dts_min <- min(dttm)
     dts_max <- max(dttm)
     rm(dttm)
-    ipayipi::msg(cat(crayon::silver("Data sets evaluated ...")), chunk_v)
+    if (chunk_v) cli::cli_inform(c("v" = "Data sets evaluated."))
   }
 
   # get ri ----
@@ -143,7 +145,7 @@ sf_dta_chunkr <- function(
     )
   }
   # if the old index table date_time coverage is limited rename files
-  ipayipi::msg(cat(crayon::silver("Checking old index table ...")), chunk_v)
+  if (chunk_v) cli::cli_inform(c(" " = "Checking old index table."))
   imn <- min(c(dts_min, indx$mn))
   imx <- max(c(dts_max, indx$mx))
   c1 <- all(!is.null(indx), nrow(it) > 0)
@@ -173,7 +175,7 @@ sf_dta_chunkr <- function(
     }
   }
   # chunk data sets
-  ipayipi::msg(cat(crayon::silver("Chunking data ...")), chunk_v)
+  if (chunk_v) cli::cli_inform(c(">" = "Chunking data ..."))
   wd <- it[dts_min < chnk_cl & dts_max > chnk_fl]
   if (ri %in% "discnt" && is.null(rit)) rit <- "event_based"
   if (is.null(rit)) rit <- "continuous"
@@ -191,9 +193,7 @@ sf_dta_chunkr <- function(
     dta_n = dn
   )
   # inter-chunk time series check/fill ----
-  ipayipi::msg(cat(crayon::silver("Checking inter chunk ts integrity ...")),
-    chunk_v
-  )
+  if (chunk_v) cli::cli_inform(c(">" = "Checking inter chunk ts integrity ..."))
   w <- ipayipi::chunkr_inter_chk(dta_room = dta_room, indx = indx, i_zeros =
       i_zeros, verbose = verbose, xtra_v, chunk_v = chunk_v
   )

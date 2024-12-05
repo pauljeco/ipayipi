@@ -33,8 +33,8 @@ dta_list <- function(
   slist <- list.files(path = input_dir, pattern = file_ext, recursive = recurr)
 
   # more unwanted files
-  unwanted <- paste0(c("rdta_log.rds", "transfer_log.rds", "nomtab",
-      "data_handle.rdhs", "datum_log", "phentab", unwanted
+  unwanted <- paste0(c("rdta_log.rds", "transfer_log.rds", "aa_nomtab",
+      "data_handle.rdhs", "datum_log", "aa_phentab", unwanted
     ), collapse = "|"
   )
   wanted <- paste0(wanted, collapse = "|")

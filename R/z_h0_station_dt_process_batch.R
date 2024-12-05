@@ -35,6 +35,7 @@ dt_process_batch <- function(
   unwanted_tbls = "_tmp",
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = chunk_v,
   ...
 ) {
 
@@ -44,39 +45,29 @@ dt_process_batch <- function(
     recurr = FALSE, baros = FALSE, unwanted = unwanted, wanted = wanted
   )
 
-  cr_msg <- padr(core_message = paste0(" Data processing: ",
-      length(station_files), " station files ", collape = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
-
+  if (verbose || xtra_v || chunk_v) {
+    cli::cli_h1("Data processing: {length(station_files)} station file{?s}")
+  }
+  if (fcoff()) {
+    xtra_v <- FALSE
+    chunk_v <- FALSE
+  }
   # update and/or create new stations
   # upgraded_stations <- lapply(seq_along(new_station_files), function(i) {
-  station_files <-
-    future.apply::future_lapply(seq_along(station_files), function(i) {
-      cr_msg <- padr(core_message = paste0(" +> ", station_files[i],
-          collapes = ""
-        ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-        force_extras = FALSE, justf = c(1, 1)
-      )
-      ipayipi::msg(cr_msg, verbose)
-      # process data
-      dtp <- attempt::attempt(
-        ipayipi::dt_process(station_file = station_files[i],
-          pipe_house = pipe_house, pipe_seq = pipe_seq, stages = stages,
-          output_dt_preffix = output_dt_preffix,
-          output_dt_suffix = output_dt_suffix,
-          overwrite_pipe_memory = overwrite_pipe_memory,
-          verbose = verbose, xtra_v = xtra_v
-        )
-      )
-      invisible(station_files[i])
-    })
-  cr_msg <- padr(core_message = paste0("  data processed  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
+
+  future.apply::future_lapply(seq_along(station_files), function(i) {
+    dtp <- attempt::attempt(dt_process(station_file = station_files[i],
+      pipe_house = pipe_house, pipe_seq = pipe_seq, stages = stages,
+      output_dt_preffix = output_dt_preffix,
+      output_dt_suffix = output_dt_suffix,
+      overwrite_pipe_memory = overwrite_pipe_memory,
+      verbose = verbose, xtra_v = xtra_v
+    ))
+    return(station_files[i])
+  }, future.conditions = NULL, future.stdout = NA)
+
+  if (verbose || xtra_v || chunk_v) {
+    cli::cli_h1("")
+  }
   invisible(station_files)
 }

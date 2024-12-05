@@ -12,6 +12,7 @@ logger_data_import_batch(
   unwanted = NULL,
   file_ext = NULL,
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 )
 }
@@ -26,15 +27,19 @@ logger_data_import_batch(
 
 \item{unwanted}{Vector of strings listing files that should not be included in the import.}
 
-\item{file_ext}{The file extension defaults to ".dat". Other file types could be incorporatted if required.}
+\item{file_ext}{The file extension defaults to NULL. Other file types could be incorporatted if required.}
 
-\item{verbose}{Print some details on the files being processed? Logical.}
+\item{verbose}{Print some details of the files being processed? Logical.}
 }
 \description{
-Locates, copies, then pastes logger data files into the 'wait_room'. Duplicate file names will have unique consequtive integers added as a suffix.
+Copies and pastes data matching search criteria from the \code{source_room} into the 'wait_room'.
 }
 \details{
-Copies logger data files into a directory where further data standardisation will take place in the 'ipayipi' data pipeline. Once the files have been standardised in native R format files the data is transferred into \code{nomvet_room}.
+\code{logger_data_import_batch()} copies logger data files from multiple stations in the 'source_room' into the 'wait_room' where data standardisation will take place using: 1) the \code{imbibe_raw_batch()}, 2) \code{header_sts()}, and 3) \code{phenomena_sts()}, in that order. Once standardised in native R format files the data is transferred into the \code{nomvet_room} with \code{transfer_sts_files()}. The standardised files in the 'nomvet_room' are kept there and station records are developed in the 'ipip_room' using \code{append_station_batch()}. Data can be furhter processed with \code{dt_process_batch()}. \cr
+Notes:
+\itemize{
+\item This function will process data from multiple stations from the 'source_room'. Note: duplicate file names will have unique consequtive integers added as a suffix.
+}
 }
 \author{
 Paul J. Gordijn

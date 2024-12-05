@@ -37,6 +37,7 @@ imbibe_raw_logger_dt <- function(
     "mdy HMOS", "mdy HMS",
     "mdy IMOSp", "mdy IMSp",
     "dmY HMOS", "dmY HMS",
+    "dmy HMOS", "dmy HMS",
     "dmy IMOSp", "dmy IMSp"
   ),
   dt_tz = "Africa/Johannesburg",
@@ -64,21 +65,45 @@ imbibe_raw_logger_dt <- function(
     if (is.null(data_setup)) data_setup <- ipayipi::solonist
     boolf <- FALSE
     dsi <- 1
+    dyno_read_f <- "dyno_read"
     while (boolf == FALSE && dsi <= length(data_setup)) {
-      ipayipi::msg(paste0("Attempting \'data_setup\' ", dsi), xtra_v)
+      if (xtra_v) cli::cli_h3(c("i" = "Attempting \'data_setup\': {dsi}"))
       dta_ex <- attempt::try_catch(expr = ipayipi::imbibe_raw_flat(
         file_path = file_path, file_ext = file_ext, col_dlm = col_dlm,
         dt_format = dt_format, dt_tz = dt_tz, data_setup = data_setup[[dsi]],
+        dyno_read_f = dyno_read_f, dsi = dsi,
         verbose = verbose, xtra_v = xtra_v
       ))
       boolf <- !dta_ex$err
-      ipayipi::msg(paste0("\'data_setup\' ", dsi, " success!"),
-        all(xtra_v, boolf)
+      if (all(xtra_v, boolf)) cli::cli_alert(
+        c("v" = "\'data_setup\' {dsi} success!")
       )
       dsi <- dsi + 1
-      ipayipi::msg("No successful \'data_setup\' try...",
-        all(dsi > length(data_setup), boolf == FALSE, xtra_v)
+      if (dsi > length(data_setup) && dyno_read_f %in% "dyno_read") {
+        dyno_read_f <- "dyno_read2"
+        if (xtra_v) {
+          cli::cli_inform(c(
+            "i" = "relaxing data header read conditions with {.var dyno_read2}."
+          ))
+        }
+        dsi <- 1
+      }
+      if (all(dsi > length(data_setup) * 2, boolf == FALSE, xtra_v)) {
+        cli::cli_inform(c(
+          "!" = "0 out of {length(data_setup)} \'data_setup\'(s) successful"
+        ))
+      }
+    }
+    dsi <- dta_ex$dsi
+    if (!dta_ex$err) {
+      dta_ex <- ipayipi::imbibe_raw_flat(
+        file_path = file_path, file_ext = file_ext, col_dlm = col_dlm,
+        dt_format = dt_format, dt_tz = dt_tz, data_setup = data_setup[[dsi]],
+        dyno_read_f = dyno_read_f, dsi = dsi, nrows = Inf,
+        verbose = verbose, xtra_v = xtra_v
       )
+    } else {
+      return(list(ipayipi_data_raw = dta_ex$ipayipi_data_raw, err = TRUE))
     }
   } else {
     dta_ex <- ipayipi::imbibe_xml(

@@ -28,7 +28,7 @@ sf_dta_chunkr_sub_ri <- function(
   ...
 ) {
   "cumn" <- "dta" <- NULL
-  ipayipi::msg(cat(crayon::silver("Evaluating data record interval")), chunk_v)
+  if (chunk_v) cli::cli_inform(c(">" = "Evaluating data record interval"))
   if (all(
     !is.null(dta_sets),
     is.null(indx) && is.null(ri) || !is.null(indx) && rechunk
@@ -42,7 +42,7 @@ sf_dta_chunkr_sub_ri <- function(
     if (length(dt) < 2) rie  <- list(
       record_interval_type = "event_based", record_interval = "discnt"
     )
-    rie <- ipayipi::record_interval_eval(dt)[
+    rie <- ipayipi::record_interval_eval(dt, record_interval_type = rit)[
       c("record_interval_type", "record_interval")
     ]
     dts_ri <- rie$record_interval
@@ -62,7 +62,7 @@ sf_dta_chunkr_sub_ri <- function(
       ), fill = TRUE, use.names = TRUE
     )[["date_time"]]
     if (length(dt) > 2) {
-      rie <- ipayipi::record_interval_eval(dt)
+      rie <- ipayipi::record_interval_eval(dt, record_interval_type = rit)
       erit <- rie$record_interval_type
       eri <- gsub("_", " ", rie$record_interval)
     } else {
@@ -85,13 +85,13 @@ sf_dta_chunkr_sub_ri <- function(
   # standards for chunking interval based on ri
   if (!is.null(ri) && !ri %in% "discnt") {
     ds <- ipayipi::sts_interval_name(ri)
-    if (ds[["dfft_units"]] %in% "years") chunk_ii <- "10 years"
-    if (ds[["dfft_units"]] %in% "months") chunk_ii <- "10 years"
-    if (ds[["dfft_units"]] %in% "weeks") chunk_ii <- "10 years"
-    if (ds[["dfft_units"]] %in% "days") chunk_ii <- "10 years"
-    if (ds[["dfft_units"]] %in% "hours") chunk_ii <- "2 months"
-    if (ds[["dfft_units"]] %in% "mins") chunk_ii <- "1 months"
-    if (ds[["dfft_units"]] %in% "secs") chunk_ii <- "1 weeks"
+    if (ds[["dfft_units"]] %in% "years") chunk_ii <- "20 years"
+    if (ds[["dfft_units"]] %in% "months") chunk_ii <- "20 years"
+    if (ds[["dfft_units"]] %in% "weeks") chunk_ii <- "20 years"
+    if (ds[["dfft_units"]] %in% "days") chunk_ii <- "20 years"
+    if (ds[["dfft_units"]] %in% "hours") chunk_ii <- "4 years"
+    if (ds[["dfft_units"]] %in% "mins") chunk_ii <- "4 months"
+    if (ds[["dfft_units"]] %in% "secs") chunk_ii <- "2 weeks"
   } else {
     ri <- "discnt"
   }

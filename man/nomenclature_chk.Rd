@@ -40,7 +40,7 @@ When \code{ipayipi} imbibes logger data the data setup (e.g.,
 information. This function assists with standardising this header
 information, storing this with header synonyms and other metadata in a
 table in the data pipelinese 'wait_room' directory. The file name of the
-table is set by default to 'nomtab.rns' (an rds file). If this file is
+table is set by default to 'aa_nomtab.rns' (an rds file). If this file is
 deleted then the synonym database will need to be rebuilt using this
 function.
 

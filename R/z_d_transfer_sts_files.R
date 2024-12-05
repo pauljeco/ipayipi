@@ -46,6 +46,7 @@ transfer_sts_files <- function(
   file_ext_in = ".ipi",
   file_ext_out = ".ipi",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
   # merge data sets into a station for given time periods
@@ -53,7 +54,16 @@ transfer_sts_files <- function(
       file_ext_in, prompt = prompt, recurr = recurr, unwanted = unwanted,
     wanted = wanted
   )
-  if (length(slist) < 1) stop(" No files to transfer")
+  if (length(slist) < 1) {
+    exit_m <- cli::cli_inform(c("No files to transfer",
+      "i" = paste0("Only after successful 1) header ({.var header_sts()}) ",
+        "then 2) phenomena standardisation can files be transferred to the ",
+        "nomenclature vetted room ({pipe_house$nomtab_room})."
+      ), "i" = "Files ready for transfer have the \'.ipi\' extension."
+    ))
+    return(exit_m)
+  }
+  if (verbose || xtra_v) cli::cli_h1("Transferring {length(slist)} file{?s}")
   # make table to guide merging by record interval, date_time, and station
   merge_dt <- future.apply::future_lapply(slist, function(x) {
     m <- readRDS(file.path(pipe_house$wait_room, x))
@@ -116,25 +126,30 @@ transfer_sts_files <- function(
       names(m)[names(m) == "raw_data"] <- tab_name
       m$data_summary$nomvet_name <- to_transfer$rds_names[x]
       saveRDS(m, file.path(pipe_house$nomvet_room, to_transfer$rds_names[x]))
-      cr_msg <- padr(core_message = paste0(to_transfer$input_file[x], " --> ",
-          to_transfer$rds_names[x], collapes = ""
-        ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-        force_extras = FALSE, justf = c(-1, 1)
-      )
-      ipayipi::msg(cr_msg, verbose)
+      if (verbose || xtra_v) cli::cli_inform(c("v" = paste0(
+        "{to_transfer$input_file[x]} transferred as ",
+        "{to_transfer$rds_names[x]}"
+      )))
       invisible(to_transfer$rds_names[x])
     })
   # remove files in the waiting room
-  deleted_files <- future.apply::future_lapply(
-    seq_len(nrow(to_transfer)), function(x) {
-      file.remove(file.path(pipe_house$wait_room, to_transfer$input_file[x]))
-      invisible(to_transfer$input_file[x])
-    }
-  )
-  rm(deleted_files)
-  cr_msg <- padr(core_message = "  transferred  ", wdth = 80, pad_char = "=",
-    pad_extras = c("|", "", "", "|"), force_extras = FALSE, justf = c(1, 1)
-  )
-  ipayipi::msg(cr_msg, verbose)
+  if (xtra_v) cli::cli_inform(c(
+    " " = "Cleaning {nrow(to_transfer)} file{?s} from the {.var wait_room}"
+  ))
+  fn <- file.path(pipe_house$wait_room, to_transfer$input_file)
+  file.remove(fn[file.exists(fn)])
+  if (verbose || xtra_v) {
+    cli::cli_h1("")
+    cli::cli_inform(c(
+      "What next?",
+      "v" = "Standardised files transferred to the {.var nomtab_room}.",
+      "i" = paste0("The {.var nomtab_room} houses the standardised files from ",
+        "multiple stations."
+      ),
+      ">" = paste0("Use {.var append_station_batch()} to generate/update ",
+        "station files in the {.var ipip_room}."
+      )
+    ))
+  }
   invisible(transferrr)
 }

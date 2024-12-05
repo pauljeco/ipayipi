@@ -63,13 +63,15 @@ plot_cumm <- function(
     dta <- attempt::attempt(tbl_read(x))
     if (attempt::is_try_error(dta)) {
       dta <- NULL
-      message(paste0("Could not read or extract data from: ", x))
+      cli::cli_warn(c("Could not read or extract data from: {x}."))
     }
     return(dta)
   })
   dts <- dts[!sapply(dts, is.null)]
   if (length(dts) == 0) {
-    stop("Refine search keys---no station files with matching data!")
+    cli::cli_abort(
+      "Refine search keys---no station files with matching data!"
+    )
   }
   dts_names <- sapply(dts, function(x) x[["stnd_title"]])
   dts <- lapply(dts, function(x) x[["dta"]])

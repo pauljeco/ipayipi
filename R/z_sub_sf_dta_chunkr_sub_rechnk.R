@@ -1,5 +1,5 @@
 #' @title Rechunks data
-#' @description If the chunk interval of data needs to be changed. This is the function that handles it. Date are chunked
+#' @description If the chunk interval of data needs to be changed. This is the function that handles it. Data are chunked
 #' @param dta_room File path to the directory where the data will be and/or is chunked and indexed.
 #' @param dta_sets List of data sets, belonging to the same data series to chunk in the `dta_room`.
 #' @param tn Name of the data table to be chunked. The tables data time-series qualities must be consistent with ipayipi's 'continuous', 'event_based', or 'mixed' series qualities.
@@ -27,9 +27,9 @@ sf_dta_chunkr_sub_rechnk <- function(
   ...
 ) {
   "chnk_fl" <- "chnk_cl" <- "dta" <- NULL
-  ipayipi::msg(cat(crayon::silver("Rechunking: sf_dta_chunkr_sub_rechnk()")),
-    chunk_v
-  )
+  if (chunk_v) cli::cli_inform(c(
+    ">" = "Rechunking: sf_dta_chunkr_sub_rechnk()"
+  ))
   # rechunk data ----
   if (rechunk && !is.null(indx) && chunk_i != indx$chunk_i) {
     imn <- min(c(dts_min, indx$mn))

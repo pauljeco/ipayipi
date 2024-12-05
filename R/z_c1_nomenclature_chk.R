@@ -16,7 +16,7 @@
 #'  information. This function assists with standardising this header
 #'  information, storing this with header synonyms and other metadata in a
 #'  table in the data pipelinese 'wait_room' directory. The file name of the
-#'  table is set by default to 'nomtab.rns' (an rds file). If this file is
+#'  table is set by default to 'aa_nomtab.rns' (an rds file). If this file is
 #'  deleted then the synonym database will need to be rebuilt using this
 #'  function.
 #'
@@ -87,7 +87,7 @@ nomenclature_chk <- function(
   # update nomtab.rns if csv is more recently modified
   # generate nomtab.rns if there is sa csv
   nomlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room, file_ext =
-      ".csv", wanted = "nomtab"
+      ".csv", wanted = "aa_nomtab"
   )
   nom_dts <- lapply(nomlist, function(x) {
     mtime <- file.info(file.path(pipe_house$wait_room, x))$mtime
@@ -96,9 +96,9 @@ nomenclature_chk <- function(
   names(nom_dts) <- nomlist
   t1 <- attempt::attempt(max(unlist(nom_dts)), silent = !verbose)
   t2 <- as.numeric(attempt::attempt(silent = !verbose,
-    max(file.info(file.path(pipe_house$wait_room, "nomtab.rns"))$mtime)
+    max(file.info(file.path(pipe_house$wait_room, "aa_nomtab.rns"))$mtime)
   ))
-  c1 <- file.exists(file.path(pipe_house$wait_room, "nomtab.rns"))
+  c1 <- file.exists(file.path(pipe_house$wait_room, "aa_nomtab.rns"))
   if (is.na(t2)) t2 <- attempt::attempt(0)
   if (all(!attempt::is_try_error(t1), !attempt::is_try_error(t2), t1 > t2)) {
     ipayipi::read_nomtab_csv(pipe_house = pipe_house)
@@ -106,8 +106,8 @@ nomenclature_chk <- function(
   if (all(!attempt::is_try_error(t1), attempt::is_try_error(t2), c1)) {
     ipayipi::read_nomtab_csv(pipe_house = pipe_house)
   }
-  if (file.exists(file.path(pipe_house$wait_room, "nomtab.rns"))) {
-    nomtab <- readRDS(file.path(pipe_house$wait_room, "nomtab.rns"))
+  if (file.exists(file.path(pipe_house$wait_room, "aa_nomtab.rns"))) {
+    nomtab <- readRDS(file.path(pipe_house$wait_room, "aa_nomtab.rns"))
     ns <- c("uz_station", "location", "station", "stnd_title", "logger_type",
       "logger_title", "uz_record_interval_type", "uz_record_interval",
       "record_interval_type", "record_interval", "uz_table_name", "table_name"
@@ -170,21 +170,69 @@ nomenclature_chk <- function(
     !grepl(pattern = "raw_", x = nomtab$table_name),
     paste0("raw_", nomtab$table_name), nomtab$table_name
   )
-  saveRDS(nomtab, file.path(pipe_house$wait_room, "nomtab.rns"))
+  saveRDS(nomtab, file.path(pipe_house$wait_room, "aa_nomtab.rns"))
   # check critical nomenclature
   nomchk <- nomtab[is.na(location) | is.na(station) | is.na(stnd_title) |
-      is.na(record_interval_type) | is.na(record_interval) | is.na(table_name)
+      is.na(record_interval_type) | is.na(record_interval) | is.na(table_name) |
+      table_name %in% "raw_NA"
   ]
+  na_rows <- which(is.na(nomtab$location) | is.na(nomtab$station) |
+      is.na(nomtab$stnd_title) | is.na(nomtab$record_interval_type) |
+      is.na(nomtab$record_interval) | is.na(nomtab$table_name) |
+      nomtab$table_name %in% "raw_NA"
+  )
   if (check_nomenclature && nrow(nomchk) > 0) {
-    message("There are unconfirmed identities in the nomenclature!")
-    message("Check the nomenclature table.")
+    if (verbose) {
+      cli::cli_inform(c(
+        "i" = "There are unconfirmed identities in the nomenclature!",
+        "i" = "Remember all lower case characters and no spaces, use '_'.",
+        ">" = "Check the following mandatory nomenclature fields:",
+        "*" = "'location': two to four letter code for project area; ",
+        "*" = "'station': name of the station WITH station type suffix.",
+        " " = " Station-type suffices: '_aws' = automatic weather station;",
+        " " = "'_bt' = atmospheric pressure - barometer; ",
+        " " = "'_ct' = conductivity and temperature",
+        " " = "'_ctd' = conductivity, depth, and temperature; ",
+        " " = "'_ect' = eddy-covariance);",
+        " " = "'_rn' = rain gauge;",
+        " " = "'_sr' = surface renewal;",
+        " " = "'_td' = temperature depth sensor.",
+        "*" = paste0("'stnd_title' (A concatenation of the location and ",
+          "station (with suffix))"
+        ),
+        "*" = paste0("'record_interval_type'; one of the following: ",
+          "'event_based', 'mixed', or 'continuous',",
+          " see {.var ?record_interval_eval} for more details."
+        ),
+        "*" = paste0("'record_interval': this will habe been guessed by ",
+          "{.var ?record_interval_eval}). NB! For 'event_based' data",
+          " 'record_interval' == 'discnt'."
+        ),
+        "*" = paste0("'table_name': standardised table name for raw data.",
+          " For 'event_based' rainfall data the pipeline standard is ",
+          "'raw_rain', and for continuous data a concatenation of 'raw_' ",
+          "and the {.var record_interval} is standard."
+        ),
+        "i" = paste0("An 'uz_' preffix indicates the 'unstandardised' ",
+          "mandatory fields/columns captured from data import/imbibe header ",
+          "info and imbibe 'data_setup' options."
+        ),
+        "i" = paste0("The following rows of the 'nomtab' have columns with ",
+          "'NA' value(s) that requires populating: \n {na_rows}"
+        )
+      ))
+    }
+    print(nomchk)
     if (csv_out) {
-      message("A csv file has been generated with updated nomenclature.")
-      message("Please complete the csv file to remove NAs.")
       out_name <-
-        paste0("nomtab_",
+        paste0("aa_nomtab_",
           format(as.POSIXlt(Sys.time()), format = "%Y%m%d_%Hh%M"), ".csv"
         )
+      cli::cli_inform(c("\n",
+        "i" = "A csv version of the 'nom_tab has been generated here:",
+        " " = "{file.path(pipe_house$wait_room, out_name)}",
+        "v" = "Fill out the NA fields and re-run {.var header_sts()}"
+      ))
       write.csv(nomtab, file.path(pipe_house$wait_room, out_name))
     }
   } else {

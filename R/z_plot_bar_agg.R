@@ -66,7 +66,7 @@ plot_bar_agg <- function(
     dta <- attempt::attempt(tbl_read(x))
     if (attempt::is_try_error(dta)) {
       dta <- NULL
-      message(paste0("Could not read or extract data from: ", x))
+      cli::cli_warn(c("Could not read or extract data from: {x}."))
     }
     return(dta)
   })

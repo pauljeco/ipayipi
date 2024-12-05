@@ -20,19 +20,19 @@
 #' dir <- "." # define the working directory
 #' pipe_init_gw(work_dir = dir)
 gw_pipe_init <- function(
-    work_dir = "."
+  work_dir = "."
 ) {
-    # wait_room dir
-    wait_room <- file.path(work_dir, "wait_room")
-        if (!dir.exists(wait_room)) {
-            dir.create(wait_room)
-    }
-    nomvet_room <- file.path(work_dir, "nomvet_room")
-        if (!dir.exists(nomvet_room)) {
-            dir.create(nomvet_room)
-    }
-    solr_room <- file.path(work_dir, "solr_room")
-        if (!dir.exists(solr_room)) {
-            dir.create(solr_room)
-    }
+  # wait_room dir
+  wait_room <- file.path(work_dir, "wait_room")
+  if (!dir.exists(wait_room)) {
+    dir.create(wait_room)
+  }
+  nomvet_room <- file.path(work_dir, "nomvet_room")
+  if (!dir.exists(nomvet_room)) {
+    dir.create(nomvet_room)
+  }
+  solr_room <- file.path(work_dir, "solr_room")
+  if (!dir.exists(solr_room)) {
+    dir.create(solr_room)
+  }
 }

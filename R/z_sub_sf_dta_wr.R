@@ -36,7 +36,9 @@ sf_dta_wr <- function(
     ...) {
   "%ilike%" <- "table_name" <- NULL
 
-  ipayipi::msg(cat(crayon::silver("sf_dta_wr()")), chunk_v)
+  if (chunk_v) cli::cli_bullets(
+    c(" " = "Writing chunks with: {.var sf_dta_wr()}")
+  )
   # check args ----
   # required: tn, dta, dta_room
   if (is.null(dta) || "function" %in% class(dta)) return(TRUE)
@@ -46,18 +48,24 @@ sf_dta_wr <- function(
     msg <- paste0("Null args provided to sf_dta_wr(): ",
       paste(names(a_args), collapse = ", "), "."
     )
-    ipayipi::msg(cat(crayon::silver(msg)), chunk_v)
+    if (chunk_v) {
+      cli::cli_warn(c("Null args provided to {.var sf_dta_wr()}: ",
+        paste0(paste(names(a_args), collapse = ", "), ".")
+      ))
+    }
   }
+  # save special data classes ----
+  ## save f_params ----
   if ("f_params" %in% class(dta)) {
     saveRDS(dta, dta_room)
     return(TRUE)
   }
+  # save other data ----
   if (!data.table::is.data.table(dta)) {
-    msg <- paste0("sf_dta_wr() requires data.table input dta")
-    ipayipi::msg(cat(crayon::yellow(msg)), chunk_v)
+    cli::cli_warn(c("x" = "{.var sf_dta_wr()} requires data.table input dta:"))
   }
 
-  # organise data columns ----
+  ## organise data columns ----
   dno <- names(dta)
   special_tbls <- c("data_summary", "phen_data_summary", "phens", "gaps",
     "pipe_seq"
@@ -70,13 +78,13 @@ sf_dta_wr <- function(
   }
   dta <- dta[, dno, with = FALSE]
 
-  # write data as ----
+  ## write data as ----
   s <- FALSE
   if (all(
     data.table::is.data.table(dta),
     "date_time" %in% names(dta)
   )) {
-    # chunks ----
+    ### chunks ----
     # attempt to get record interval for raw and 'dt' tables
     ds <- NULL
     if (tn %ilike% "^raw_*" && !is.null(sfc) && !is.null(ri)) {
@@ -99,10 +107,10 @@ sf_dta_wr <- function(
       rit = rit, ri = ri, overwrite = overwrite, verbose =
         verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
-    m <- paste0(tn, ": Data chunked")
+    m <- paste0(tn, ": data chunked")
     s <- TRUE
   } else {
-    # single RDS ----
+    ### single RDS ----
     d <- list(attempt::try_catch(expr = readRDS(dta_room),
       .e = ~dta[0],
       .w = ~dta[0]
@@ -113,7 +121,8 @@ sf_dta_wr <- function(
     dta <- ipayipi::append_tables(original_tbl = d, new_tbl = dta,
       overwrite_old = overwrite
     )[[tn]]
-    # speccial operation for logg_interfere tables
+    #### logg_interfere tables ----
+    # special op for logg interfere tables
     if ("logg_interfere" %in% tn) {
       dta <- unique(dta, by = c("date_time", "logg_interfere_type"))
       dta$id <- seq_len(nrow(dta))
@@ -122,6 +131,6 @@ sf_dta_wr <- function(
     m <- paste0(tn, ": Data saved as single RDS.")
     s <- TRUE
   }
-  if (s) ipayipi::msg(cat(crayon::silver(m)), chunk_v)
+  if (s && chunk_v) cli::cli_inform(c("v" = m))
   return(s)
 }

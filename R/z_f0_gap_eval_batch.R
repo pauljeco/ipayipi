@@ -39,6 +39,13 @@ gap_eval_batch <- function(
     recurr = FALSE, baros = FALSE, unwanted = unwanted, wanted = wanted
   )
 
+  if (length(station_files) == 0) {
+    cli::cli_abort(c("No station files detected!",
+      "i" = "Station files should be housed in the \'ipip_room\' here:",
+      " " = "{.var pipe_house$ipip_room}"
+    ))
+  }
+
   # open connections to station files
   lapply(station_files, function(x) {
     open_sf_con(pipe_house = pipe_house, station_file = x,
@@ -46,37 +53,27 @@ gap_eval_batch <- function(
     )
   })
 
-  lapply(station_files[1], function(x) {
-    cr_msg <- padr(core_message = paste0(" evaluaating gaps "),
-      wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(0, 0)
-    )
-    ipayipi::msg(cr_msg, verbose)
-    return(x)
-  })
+  if (verbose || xtra_v || chunk_v) cli::cli_h1(
+    "Evaluating gaps in {length(station_files)} station file{?s}"
+  )
 
   # generate gap table for each station file
-  gaps <- lapply(station_files, function(x) {
-    cr_msg <- padr(core_message = paste0(
-      " +> ", gsub(station_ext, "", x), collapse = ""
-    ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(1, 1)
-    )
-    ipayipi::msg(cr_msg, verbose)
-    g <- ipayipi::gap_eval(pipe_house = pipe_house, station_file = x,
+  gaps <- lapply(seq_along(station_files), function(i) {
+    g <- ipayipi::gap_eval(
+      pipe_house = pipe_house, station_file = station_files[i],
       gap_problem_thresh_s = gap_problem_thresh_s, event_thresh_s =
         event_thresh_s, meta_events = meta_events,
       verbose = verbose, phens = phens, phen_eval = phen_eval
     )
-    ipayipi::write_station(pipe_house = pipe_house, sf = g, station_file = x,
-      overwrite = TRUE, append = TRUE
+    ipayipi::write_station(pipe_house = pipe_house, sf = g,
+      station_file = station_files[i], overwrite = TRUE,
+      append = TRUE, chunk_v = chunk_v
     )
-    invisible(x)
+    if (verbose || xtra_v || chunk_v) cli::cli_inform(c(
+      "v" = "{i}: {gsub(station_ext, \'\', station_files[i])}"
+    ))
+    invisible(station_files[i])
   })
-  cr_msg <- padr(core_message = paste0(
-    "  gaps evaluated  ", collapes = ""
-  ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-  force_extras = FALSE, justf = c(0, 0))
-  ipayipi::msg(cr_msg, verbose)
+  if (verbose || xtra_v || chunk_v) cli::cli_h1("")
   invisible(gaps)
 }

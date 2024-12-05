@@ -18,9 +18,15 @@ read_phentab_csv <- function(
 
   if (is.null(file)) {
     phenlist <- ipayipi::dta_list(input_dir = pipe_house$wait_room,
-      file_ext = ".csv", wanted = "phentab"
+      file_ext = ".csv", wanted = "aa_phentab"
     )
-    if (length(phenlist) < 1) stop("There is no phentab file in the wait_room!")
+    if (length(phenlist) < 1) {
+      cli::cli_abort(c(
+        "!" = "There is no aa_phentab csv file in the wait_room!",
+        "i" = "Searching for 'aa_phentab_YYYYMMDD_HHMM' here:",
+        "{pipe_house$wait_room}"
+      ))
+    }
     phen_dts <- lapply(phenlist, function(x) {
       mtime <- file.info(file.path(pipe_house$wait_room, x))$mtime
       invisible(mtime)
@@ -37,15 +43,15 @@ read_phentab_csv <- function(
   phentab <- data.table::fread(file.path(pipe_house$wait_room, file),
     header = TRUE
   )
-  ck_cols <- c("phen_name_full", "phen_name", "units", "measure")
-  cans <- sum(
-    sapply(phentab[, ck_cols, with = FALSE], function(x) sum(is.na(x)))
-  )
-  if (cans > 0) {
-    message("There are unconfirmed identities in the phenomena nomenclature!")
-    message("Please edit the csv file to remove NAs.")
-    print(phentab[rowSums(is.na(phentab[, ck_cols, with = FALSE])) > 0])
-  }
+  # ck_cols <- c("phen_name_full", "phen_name", "units", "measure")
+  # cans <- sum(
+  #   sapply(phentab[, ck_cols, with = FALSE], function(x) sum(is.na(x)))
+  # )
+  # if (cans > 0) {
+  #   message("There are unconfirmed identities in the phenomena nomenclature!")
+  #   message("Please edit the csv file to remove NAs.")
+  #   print(phentab[rowSums(is.na(phentab[, ck_cols, with = FALSE])) > 0])
+  # }
 
   suppressWarnings(phentab <- data.table::data.table(
     phid = as.integer(phentab$phid),
@@ -63,6 +69,6 @@ read_phentab_csv <- function(
     sensor_id = as.character(phentab$sensor_id),
     notes = as.character(phentab$notes)
   ))
-  saveRDS(phentab, file.path(pipe_house$wait_room, "phentab.rps"))
+  saveRDS(phentab, file.path(pipe_house$wait_room, "aa_phentab.rps"))
   invisible(phentab)
 }

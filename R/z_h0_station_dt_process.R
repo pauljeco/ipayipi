@@ -44,6 +44,7 @@ dt_process <- function(
   "%ilike%" <- NULL
   "dt_n" <- "dtp_n" <- "ppsid" <- "phen_name" <- "n" <- NULL
 
+  if (verbose) cli::cli_h2(c("Processing {station_file} ..."))
   # open station file connection
   sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file,
     verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
@@ -126,11 +127,12 @@ dt_process <- function(
       } else {
         f_params <- NULL
       }
-      cr_msg <- padr(core_message = paste0(i, "-", j, ": ", f, collapes = ""),
-        wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-        force_extras = FALSE, justf = c(-1, 3)
-      )
-      ipayipi::msg(cr_msg, verbose)
+      # cr_msg <- padr(core_message = paste0(i, "-", j, ": ", f, collapes = ""),
+      #   wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
+      #   force_extras = FALSE, justf = c(-1, 3)
+      # )
+      # ipayipi::msg(cr_msg, verbose)
+      cli::cli_h3(c("{i}-{j}: {f}"))
       args <- list(station_file = station_file, f_params = f_params,
         ppsij = ppsij, full_eval = TRUE, sfc = sfc, verbose = verbose,
         xtra_v = xtra_v
@@ -219,12 +221,13 @@ dt_process <- function(
       } else {
         f_params <- as.list(ppsij$f_params)
       }
-      cr_msg <- padr(
-        core_message = paste0(ppsi$dt_n[1], "-", j, ": ", f, collapes = ""),
-        wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-        force_extras = FALSE, justf = c(-1, 3)
-      )
-      ipayipi::msg(cr_msg, verbose)
+      # cr_msg <- padr(
+      #   core_message = paste0(ppsi$dt_n[1], "-", j, ": ", f, collapes = ""),
+      #   wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
+      #   force_extras = FALSE, justf = c(-1, 3)
+      # )
+      # ipayipi::msg(cr_msg, verbose)
+      cli::cli_h3(c("{ppsi$dt_n[1]}-{j}: {.strong {f}}"))
       # get arguments and process function
       args <- list(station_file = station_file, f_params = f_params,
         ppsij = ppsij, sfc = sfc, verbose = verbose, xtra_v = xtra_v

@@ -13,6 +13,7 @@ header_sts(
   file_ext_in = ".ipr",
   file_ext_out = ".iph",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 )
 }

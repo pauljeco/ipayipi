@@ -1,15 +1,17 @@
 #' @title Import logger data
-#' @description Locates, copies, then pastes logger data files into the 'wait_room'. Duplicate file names will have unique consequtive integers added as a suffix.
+#' @description Copies and pastes data matching search criteria from the `source_room` into the 'wait_room'.
 #' @param pipe_house List of pipeline directories. __See__ `ipayipi::ipip_house()` __for details__.
-#' @param prompt Should the function use an interactive file selection function otherwise all files are returned. `TRUE` or `FALSE`.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? `TRUE` or `FALSE`.
 #' @param wanted Vector of strings listing files that should not be included in the import.
 #' @param unwanted Vector of strings listing files that should not be included in the import.
-#' @param file_ext The file extension defaults to ".dat". Other file types could be incorporatted if required.
-#' @param verbose Print some details on the files being processed? Logical.
+#' @param file_ext The file extension defaults to NULL. Other file types could be incorporatted if required.
+#' @param verbose Print some details of the files being processed? Logical.
+#' @param prompt Should the function use an interactive file selection function otherwise all files are returned. `TRUE` or `FALSE`.
 #' @keywords import logger data files; meteorological data; automatic weather station; batch process; hydrological data;
 #' @author Paul J. Gordijn
-#' @details Copies logger data files into a directory where further data standardisation will take place in the 'ipayipi' data pipeline. Once the files have been standardised in native R format files the data is transferred into `nomvet_room`.
+#' @details `logger_data_import_batch()` copies logger data files from multiple stations in the 'source_room' into the 'wait_room' where data standardisation will take place using: 1) the `imbibe_raw_batch()`, 2) `header_sts()`, and 3) `phenomena_sts()`, in that order. Once standardised in native R format files the data is transferred into the `nomvet_room` with `transfer_sts_files()`. The standardised files in the 'nomvet_room' are kept there and station records are developed in the 'ipip_room' using `append_station_batch()`. Data can be furhter processed with `dt_process_batch()`. \cr
+#' Notes:
+#' * This function will process data from multiple stations from the 'source_room'. Note: duplicate file names will have unique consequtive integers added as a suffix.
 #' @export
 logger_data_import_batch <- function(
   pipe_house = NULL,
@@ -19,9 +21,11 @@ logger_data_import_batch <- function(
   unwanted = NULL,
   file_ext = NULL,
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
-
+  ":=" <- NULL
+  "fsnew" <- "name" <- NULL
   # get list of data to be imported
   unwanted <- paste0("['.']ipr|['.']ipi|['.']iph|['.']xls|['.']rps",
     "['.']rns|['.']ods|['.']doc|['.']md|wait_room",
@@ -32,12 +36,19 @@ logger_data_import_batch <- function(
     file_ext = file_ext, prompt = prompt, recurr = recurr,
     unwanted = unwanted, wanted = wanted
   )
-  cr_msg <- padr(core_message = paste0(" Introducing ", length(slist),
-      " data files into the pipeline waiting room", collapes = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
+  if (length(slist) == 0) {
+    exit_m <- cli::cli_inform(c(
+      paste0("No files detected in the pipe house \'source room\'",
+        " ({pipe_house$source_room})"
+      ), "i" = paste0("New data files are pulled into the pipeline from",
+        " {.var pipe_house$source_room}."
+      )
+    ))
+    return(exit_m)
+  }
+  if (verbose || xtra_v) cli::cli_h1(
+    "Importing {length(slist)} data file{?s} into the {.var wait_room}"
   )
-  ipayipi::msg(cr_msg, verbose)
   slist_df <- data.table::data.table(name = slist, basename = basename(slist),
     rep = rep(NA_integer_, length(slist))
   )
@@ -47,32 +58,32 @@ logger_data_import_batch <- function(
     return(x)
   })
   slist_dfs <- data.table::rbindlist(slist_dfs)
-  future.apply::future_lapply(seq_len(nrow(slist_dfs)), function(x) {
-    if (is.null(file_ext)) {
-      file_ext <- tools::file_ext(slist_dfs$name[x])
-      file_ext <- paste0(".", sub(pattern = "\\.", replacement = "", file_ext))
-    }
-    file.copy(
-      from = file.path(pipe_house$source_room, slist_dfs$name[x]),
-      to = file.path(pipe_house$wait_room,
-        paste0(gsub(pattern = file_ext, replacement = "",
-            x = slist_dfs$basename[x], ignore.case = TRUE
-          ), "__", slist_dfs$rep[x], file_ext
-        )
-      ), overwrite = TRUE
-    )
-    cr_msg <- padr(core_message =
-        paste0(basename(slist[x]), " done ...", collapes = ""),
-      wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(-1, 2)
-    )
-    ipayipi::msg(cr_msg, verbose)
-  })
+  slist_dfs$file_ext <- tools::file_ext(slist_dfs$name)
+  slist_dfs[, file_ext := paste0(
+    ".", sub(pattern = "\\.", replacement = "", file_ext)
+  )]
+  slist_dfs$fsf <- file.path(pipe_house$source_room, slist_dfs$name)
+  slist_dfs[, fsnew := vgsub(
+    pattern = file_ext, replacement = "", x = basename, ignore.case = TRUE
+  )]
+  slist_dfs[, fsnew := file.path(pipe_house$wait_room, paste0(
+    fsnew, "__", rep, file_ext
+  ))]
+  file.copy(from = slist_dfs$fsf, to = slist_dfs$fsnew, overwrite = TRUE)
+  if (verbose || xtra_v) cli::cli_bullets(c(
+    "v" = "{length(slist_dfs$basename)} file{?s} imported ..."
+  ))
 
-  cr_msg <- padr(core_message =
-      paste0("  import complete  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  return(ipayipi::msg(cr_msg, verbose))
+  if (verbose || xtra_v) cli::cli_h1("")
+  if (verbose || xtra_v) cli::cli_inform(c(
+    " " = "What next?",
+    "v" = "data successfully copied to the {.var wait_room}.",
+    ">" = paste0("Now use the {.var imbibe_raw_batch()} function to convert",
+      "into \'ipayipi' format data files."
+    ),
+    "i" = paste0("See {.var imbibe_raw_batch()} helpfiles for more detail!",
+      " ({.var ?imbibe_raw_batch()})."
+    )
+  ))
+  invisible(slist_dfs)
 }

@@ -13,6 +13,7 @@ transfer_sts_files(
   file_ext_in = ".ipi",
   file_ext_out = ".ipi",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 )
 }

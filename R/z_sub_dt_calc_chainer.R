@@ -47,8 +47,10 @@ chainer <- function(
   )
   u <- list(...)
   m <- lapply(u, function(z) {
-    message("Unrecognised arguments:")
-    print(names(z))
+    cli::cli_inform(c(
+      "i" = "In chaining:",
+      "!" = "Unrecognised arguments: {names(z)}"
+    ))
   })
   rm(m)
   x <- x[!sapply(x, is.null)]

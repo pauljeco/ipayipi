@@ -16,6 +16,7 @@ dt_agg(
   gaps_phens = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }

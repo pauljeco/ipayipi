@@ -1,8 +1,9 @@
-#' @title Build `ipayipi` data pipeline housing
-#' @description Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline.
-#' @param work_dir The working directory/'room' (or folder) in which all pipeline rooms are 'housed'. \bold{NB!} The working directory is relative to the console/terminal working directory, or the full path name.
+#' @title Build `ipayipi` data pipeline housing for a data family
+#' @description Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline within an existing `pipe_house_dir`. Suggestion is to use default options --- only provide the `pipe_house_dir` that refers to an existing directory for your data pipeline. By providing other parameters the directories can be customised for special-use cases.
+#' The recommentation is to build seperate 'pipe_houses' for different data streams or families, such as, automatic weather stations and water level transducers. Whilst the families are housed in different 'pipe houses', iPayipi can query and process data across different data families.
+#' @param pipe_house_dir The main pipeline directory/'room' (or folder) in which all pipeline rooms are 'housed'. \bold{NB!} The `pipe_house_dir` direcotry must be relative to the active console/terminal working directory, or the full path name.
 #'\cr \cr
-#' @param r Directory for miscellaneous scripts. Within the 'r' room, a sub directory is created called 'pipe_seq' for housing processing pipeline sequence scripts for `ipayipi::dt_process()`.
+#' @param r Directory for miscellaneous scripts. Within the 'r' room, a sub directory is created called 'pipe_seq' for housing processing pipeline sequence scripts for `ipayipi::dt_process()`. Suggestion is to leave `NULL` so that this 'room' is nested within the `pipe_house_dir`.
 #' The data is moved through an 'ipayipi' pipeline housing system through the following rooms.
 #' \cr \cr
 #' Data moves through an 'ipayipi' pipeline through the following rooms 1--4. Along the way raw data is organised and archived, and data is standardised before being processed. \cr
@@ -15,34 +16,26 @@
 #' @param raw_room 'Room' wherein raw-data files from the `source_room` are systematically archived. If this is set to `NULL` then raw-data files will not be archived by 'ipayipi'.
 #' @keywords initiate pipeline, folder creation, directory structure
 #' @return List of pipeline housing 'rooms' (filepaths).
-#' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is illustrated below. The preffix to the folders created represents this flow of data.
+#' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is described below. The preffix to the folders created represents this flow of data.
 #'
-#' 1-|--work_dir -----------------------------------------------------------------------|\cr
-#' 2-|--source_room-->|`                                 `|\cr
-#' 3-|`            `|--wait_room-->|`                      `|\cr
-#' 4-|`            `|`          `|--nomvet_room-->|`        `|\cr
-#' 5-|`            `|`                       `|--ipip_room|\cr
-#' ---|`            `|`                                 `|\cr
-#' 6-|`            `|--> raw_room`                       `|\cr
-#'
-#' _Note the above illustration shows data flow not the structure of an ipayipi directory._
-#'
-#' 1. *work_dir*: The working directory within which other pipeline directories are housed.
-#' 2. The source directory where raw data are harvested from.
-#' 3. A staging directory where 'raw data' are standardised before being transferred/archived in the,
-#' 4. `nomvet_room`.
-#' 5. The directory that compiles standardised data from the `nomvet_room` by stations. Station files can be further processed and exported into other formats from here.
-#' 6. If the `raw_room` is defined `ipayipi::imbibe_raw_batch()` can harvest (copy or cut---see funtion documentation) and archive 'raw data' files from the `source_room` and will archive them in the `raw_room` in monthly folders.
+#' 1. *pipe_house_dir**: The main directory within which other directories are housed for preparing, standardising and processing data.
+#' 2. *source_room*: The source directory where raw data are harvested from.
+#' 3. *wait_room*: A staging directory where 'raw data' are standardised before being transferred/archived in the,
+#' 4. *nomvet_room*: Folder that standardised input data for multiple stations. By appending these standarised files station records (databases) are compiled. 
+#' 5. *ipip_room*: The directory that compiles standardised data from the `nomvet_room` by stations. Station files can be further processed and exported into other formats from here.
+#' 6. *raw_room*:  If defined `ipayipi::imbibe_raw_batch()` can harvest (copy or cut---see funtion documentation) and archive 'raw data' files from the `source_room` and will archive them in the `raw_room` in monthly folders.
+#' \cr
+#' * In older versions of 'ipayipi' the 'pipe_house_dir' argument was named 'pipe_house_dir'; this alteration prevents confusion with the R terminal/console working directory.
 #' @md
 #' @examples
 #' # Inititate pipeline
-#' wd <- "." # define the working directory
-#' pipe_house <- ipip_house(work_dir = wd)
+#' pd <- "." # define the working directory
+#' pipe_house <- ipip_house(pipe_house_dir = pd)
 #' print(pipe_house)
 #' @author Paul J. Gordijn
 #' @export
 ipip_house <- function(
-  work_dir = ".",
+  pipe_house_dir = ".",
   r = NULL,
   source_room = NULL,
   wait_room = NULL,
@@ -51,8 +44,12 @@ ipip_house <- function(
   dta_out = NULL,
   reports = NULL,
   raw_room = NULL,
+  work_dir = NULL,
+  verbose = FALSE,
   ...
 ) {
+
+  if (!is.null(work_dir)) pipe_house_dir <- work_dir
 
   # dir 'names'
   dirs <- list("r", "source_room", "wait_room", "nomvet_room",
@@ -62,7 +59,7 @@ ipip_house <- function(
     z <- get(x)
     # lean and trailing forward and backward slashes
     if (!is.null(z)) z <- gsub("^[/]|^[//]|^[\\]|[/]$|[\\]$", "", z)
-    if (is.null(z)) z <- file.path(work_dir, x)
+    if (is.null(z)) z <- file.path(pipe_house_dir, x)
     z <- gsub("^[/]|^[//]|^[\\]|[/]$|[\\]$", "", z)
     names(z) <- x
     return(z)
@@ -71,8 +68,15 @@ ipip_house <- function(
     "ipip_room", "dta_out", "reports", "raw_room"
   )
   # check that the working directory exists
-  if (!file.exists(work_dir)) {
-    message("Error: Working direcotry not found; check path string!")
+  if (!file.exists(pipe_house_dir)) {
+    cli::cli_abort(c(
+      paste0("\'Pipe_room\' directory not found;",
+        " manually create {.var pipe_house_dir} OR check path string!"
+      ), "i" = "Current working directory is: \'{getwd()}\'.",
+      "i" = paste0("The specified {.var pipe_house_dir} (= {pipe_house_dir})",
+        " must be relative to the current working directory."
+      ), "i" = "In older versions of ipayipi \'pipe_house\' was \'work_dir\'"
+    ))
     return(NULL)
   }
   dirs_gen <- lapply(seq_along(dirs), function(i) {
@@ -87,6 +91,17 @@ ipip_house <- function(
     }
   })
   rm(dirs_gen)
-  dirs$work_dir <- work_dir
+  dirs$pipe_house_dir <- pipe_house_dir
+  if (verbose) {
+    cli::cli_inform(c(
+      "What next?",
+      "v" = "Pipe house directory structure created.",
+      " " = paste0("Begin processing data by housing new, raw-flat files in",
+        " the {.var source_room}.",
+      ), "i" = paste0("From the {.var source_room} data is copied to the ",
+        "{.var wait_room} using the function:"
+      ), " " = "{.var logger_data_import_batch()}"
+    ))
+  }
   return(dirs)
 }

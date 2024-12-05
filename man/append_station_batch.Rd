@@ -16,6 +16,7 @@ append_station_batch(
   phen_id = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 )
 }

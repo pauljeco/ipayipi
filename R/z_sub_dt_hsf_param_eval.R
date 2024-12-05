@@ -38,7 +38,7 @@ hsf_param_eval <- function(
   chunk_v = FALSE,
   ...
 ) {
-  "%+%" <- "%ilike%" <- ":=" <- NULL
+  "%ilike%" <- ":=" <- NULL
   "phen_name" <- "table_name" <- "input_dt" <- "phen_syn" <- "dt_n" <-
     "dtp_n" <- "output_dt" <- "orig_table_name" <- "dt_record_interval" <- NULL
 
@@ -205,13 +205,14 @@ hsf_param_eval <- function(
     }
 
     if (is.null(p)) {
-      message(cat(crayon::red("Harvested phenomena details not developed! \n")))
-      message(cat(crayon::blue(
-        "Phenomena details are extracted from: \n" %+%
-          " - the \'phens'\ table if the harvest table name is == \'raw\'" %+%
-          "\n" %+% " - the \'phens_dt\' table if the harvested table has" %+%
-          " the preffix \'dt_\', or \n - are constructed through evaluation."
-      )))
+      cli::cli_inform(c("i" = "Phenomena metadata:",
+        "!" = "Harvested phenomena details not developed!",
+        "i" = "Phenomena details are extracted from:",
+        "*" = "the \'phens'\ table if the harvest table name is == \'raw\',",
+        "*" = paste0("the \'phens_dt\' table if the harvested table has",
+          " the preffix \'dt_\', or"
+        ), "*" = "are constructed through evaluation."
+      ))
     }
     ## phen aggregation interval options ----
     # add record interval to p to organise aggregation intervals and phenomena
@@ -273,8 +274,11 @@ hsf_param_eval <- function(
       hsf_params <- pg[hsf_params, on = .(p == phen_name)]
       data.table::setnames(hsf_params, "p", "phen_name")
       if (nrow(hsf_params[is.na(pg)]) == nrow(hsf_params)) {
-        message("Failed to match up phen_gap names!")
-        message("Check phen names are spelt correctly ...")
+        cli::cli_inform(c(
+          "i" = "While evaluating phenomena and associated gaps:",
+          "!" = "Failed to match up phen_gap names!",
+          "i" = "Check phen names are spelt correctly ..."
+        ))
       }
       hsf_params <- hsf_params[, phen_gap := data.table::fifelse(
         !is.na(pg), pg, phen_gap

@@ -53,6 +53,7 @@ phenomena_sts <- function(
   file_ext_in = ".iph",
   file_ext_out = ".ipi",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
   "uz_phen_name" <- "uz_units" <- "uz_measure" <- "phen_name_full" <-
@@ -68,30 +69,39 @@ phenomena_sts <- function(
       file_ext_in, prompt = prompt, recurr = recurr, unwanted = unwanted,
     wanted = wanted
   )
-  cr_msg <- padr(core_message = paste0(" Standardising ", length(slist),
-      " file(s) phenomena ", collapse = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
+  if (length(slist) == 0) {
+    cli::cli_inform(c(paste0(
+      "No files in waiting room ({pipe_house$wait_room})",
+      " ready for phenomena standardisation;"
+    ), "i" = paste0("First imbibe files imported files in the waiting room",
+      " then run {.var header_sts()}. After {.var header_sts()} is complete,",
+      " files are ready for phenomena standardisation."
+    ), "i" = paste0("Files ready for phenomena standardisation have the ",
+      "\'.iph\' extension."
+    )))
+    return(NULL)
+  }
+  if (verbose || xtra_v) cli::cli_h1(
+    "Standardising {length(slist)} file{?s} phenomena"
   )
-  ipayipi::msg(cr_msg, verbose)
 
   phentab <- ipayipi::phenomena_chk(pipe_house = pipe_house,
     check_phenomena = TRUE, csv_out = TRUE, wanted = wanted,
-    unwanted = unwanted, external_phentab = external_phentab
+    unwanted = unwanted, external_phentab = external_phentab,
+    verbose = verbose, xtra_v = xtra_v
   )
 
-  if (!is.na(phentab$output_csv_name)) message("Update phenomena")
   phentab <- phentab$update_phenomena
   # don't start sts if there are no sts
   if (nrow(phentab[!is.na(phen_name)]) == 0) {
-    return(message("No standards available"))
+    print(phentab)
+    cli::cli_abort(c("No standards available",
+      "i" = "All {.var phen_name} are {.var NA} in the \'aa_phentab\' file!"
+    ))
   }
+  if (fcoff()) xtra_v <- FALSE
   fupdates <- lapply(seq_along(slist), function(i) {
-    cr_msg <- padr(core_message = paste0(" +> ", slist[i], collapes = ""),
-      wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(1, 1)
-    )
-    ipayipi::msg(cr_msg, verbose)
+    if (verbose || xtra_v) cli::cli_inform(c(" " = "Working on {slist[i]} ..."))
     m <- readRDS(file.path(pipe_house$wait_room, slist[i]))
     update <- FALSE # only set to TRUE if phen update is required
     # get original phen table and update
@@ -101,7 +111,9 @@ phenomena_sts <- function(
           uz_units == phen_old$units[j] & uz_measure == phen_old$measure[j]
       ]
       if (nrow(phen_new) > 1) {
-        message("Multiple possible phenomena matches: printing data summary")
+        cli::cli_warn(c(
+          "!" = "Multiple possible phenomena matches: printing data summary"
+        ))
         print(m$data_summary)
       }
       invisible(phen_new)
@@ -114,15 +126,18 @@ phenomena_sts <- function(
     if (anyNA.data.frame(subset(phen_new_chk, select = -offset))) update <- TRUE
 
     # duplicate phen detection and resolution
-    if (any(duplicated(phen_new$phen_name)) && remove_dups) {
+    if (any(duplicated(phen_new[!is.na(phen_name)]$phen_name)) && remove_dups) {
       # prompt to remove duplicated column/phen
-      message(paste0("Warning! Duplicate phenomena match!"))
-      message(paste0("Please examine the input data."))
-      message(paste0("Duplicate phenomena:"))
-      print(phen_new$phen_name[duplicated(phen_new$phen_name)])
-      message("Phenomena table:")
+      cli::cli_inform(c(
+        "Duplicate phenomena match!",
+        "i" = "Please examine the input data.",
+        " " = paste0("Duplicate phenomena: ",
+          "{phen_new$phen_name[duplicated(phen_new$phen_name)]}"
+        ),
+        " " = "Phenomena table:"
+      ))
       print(phen_new)
-      message("Data head:")
+      cli::cli_inform(c("Data head:"))
       print(head(m$raw_data))
 
       chosen_p <- function() {
@@ -163,15 +178,17 @@ phenomena_sts <- function(
     }
 
     # if there are dups but we don't want to fix them now
-    if (any(any(duplicated(phen_new$phen_name)) && !remove_dups, update)) {
+    if (any(
+      anyDuplicated(phen_new[!is.na(phen_name)]$phen_name) > 0
+      && !remove_dups, update
+    )) {
       # do nothing return?
-      msg <- paste0(file.path(pipe_house$wait_room, slist[i]),
-        ": not processed"
-      )
+      if (verbose || xtra_v) cli::cli_inform(c(
+        ">" = "Update phenomena metadata for {slist[i]}; "
+      ))
       orig_fn <- m$data_summary$file_origin
       fn <- file.path(pipe_house$wait_room, slist[i])
       z <- list(update = TRUE, fn = fn, old_fn = fn, orig_fn = orig_fn)
-      message(msg)
       return(z)
     }
 
@@ -284,37 +301,39 @@ phenomena_sts <- function(
   fupdates <- data.table::rbindlist(fupdates)
   # rename saved files if they don't still need phen updates
   if (nrow(fupdates) == 0) {
-    cr_msg <- padr(
-      core_message = paste0("  phens standardised  ", collapes = ""),
-      wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(0, 0)
-    )
-    ipayipi::msg(cr_msg, verbose)
+    if (verbose || xtra_v) cli::cli_h1("")
     return(list(updated_files = NULL, no_updates = NULL))
   }
   no_update <- fupdates[update == TRUE]
   tbl_update <- fupdates[update == FALSE]
-  future.apply::future_lapply(seq_len(nrow(tbl_update)), function(i) {
-    fn <- file.path(pipe_house$wait_room, basename(tbl_update$fn[i]))
-    old_fn <- file.path(pipe_house$wait_room, basename(tbl_update$old_fn[i]))
-    if (file.exists(old_fn)) {
-      s <- file.rename(from = old_fn, to = fn)
-    } else {
-      s <- FALSE
-    }
-    invisible(s)
-  })
+  if (nrow(tbl_update) > 0) {
+    fn <- file.path(pipe_house$wait_room, basename(tbl_update$fn))
+    old_fn <- file.path(pipe_house$wait_room, basename(tbl_update$old_fn))
+    fne <- file.exists(old_fn)
+    file.rename(from = old_fn[fne], to = fn[fne])
+  }
   data.table::setnames(tbl_update, old = c("fn", "old_fn", "orig_fn"),
     new = c("file_name", "old_file_name", "original_file_name")
   )
   data.table::setnames(no_update, old = c("fn", "old_fn", "orig_fn"),
     new = c("file_name", "old_file_name", "original_file_name")
   )
-  cr_msg <- padr(
-    core_message = paste0("  phens standardised  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
+  if (verbose || xtra_v) {
+    cli::cli_h1("")
+    cli::cli_inform(c(
+      "What next?",
+      "*" = paste0(
+        "When phenomena standardisation of a file is complete, the file is ",
+        "renamed with the extension \'.ipi\'."
+      ),
+      "v" = paste0("\'.ipi\' files are standardised and ready for transfer to ",
+        "the phenomena standardisation."
+      ),
+      ">" = paste0("Use {.var transfer_sts_files()} to move \'ipi\' files to ",
+        "the {.var nomvet_room}."
+      ),
+      " " = "This will clean up the {.var wait_room}."
+    ))
+  }
   invisible(list(updated_files = tbl_update, no_updates = no_update))
 }

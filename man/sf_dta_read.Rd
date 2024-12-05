@@ -15,6 +15,7 @@ sf_dta_read(
   start_dttm = NULL,
   end_dttm = NULL,
   xtra_v = FALSE,
+  chunk_v = chunk_v,
   ...
 )
 }

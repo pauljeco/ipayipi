@@ -29,6 +29,7 @@ header_sts <- function(
   file_ext_in = ".ipr",
   file_ext_out = ".iph",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
   ".SD" <- ":=" <- NULL
@@ -39,24 +40,29 @@ header_sts <- function(
       file_ext_in, prompt = prompt, recurr = recurr, unwanted = unwanted,
     wanted = wanted
   )
-  cr_msg <- padr(core_message = paste0(" Standardising ", length(slist),
-      " ipayipi header info ", collapes = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
+  if (length(slist) == 0) {
+    cli::cli_inform(c("!" = paste0(
+      "No files read in waiting room ({pipe_house$wait_room})",
+      " available for header standardisation."
+    ), "i" = paste0("First imbibe imported files in the waiting room",
+      " with {.var logger_data_import_batch()} then run {.var header_sts()}."
+    ), "i" = paste0("Files ready for header standardisation have the ",
+      "\'.ipr\' extension."
+    )))
+    invisible(NULL)
+  }
+  if (verbose || xtra_v) cli::cli_h1(c(
+    "Standardising header info of {length(slist)} file{?s}"
+  ))
   nomtab <- ipayipi::nomenclature_chk(pipe_house = pipe_house,
     check_nomenclature = TRUE, csv_out = TRUE, file_ext = file_ext_in
   )
-  if (!is.na(nomtab$output_csv_name)) message("Update nomenclature")
   nomtab <- nomtab$update_nomtab
-
+  if (fcoff()) xtra_v <- FALSE
   file_name_dt <- future.apply::future_lapply(seq_along(slist), function(i) {
-    cr_msg <- padr(core_message = paste0(" +> ", slist[i], collapes = ""),
-      wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      force_extras = FALSE, justf = c(1, 1)
-    )
-    ipayipi::msg(cr_msg, verbose)
+    if (verbose || xtra_v) cli::cli_inform(c(
+      " " = "working on: {slist[i]} ..."
+    ))
     m <- readRDS(file.path(pipe_house$wait_room, slist[i]))
 
     # update the start and end date_times
@@ -80,8 +86,7 @@ header_sts <- function(
       ]
     )
     if (na_sub | nrow(nt) == 0 | nt$table_name == "raw_NA") {
-      msg <- paste0("Update header nomenclature for: ", slist[i], collapse = "")
-      message(msg)
+      cli::cli_inform(c(">" = "Update header nomenclature for: {slist[i]}; "))
       z <- list(update = TRUE)
     } else {
       m$data_summary$stnd_title <- nt$stnd_title[1]
@@ -164,6 +169,9 @@ header_sts <- function(
     )
     ri <- m$data_summary$record_interval
     z <- c(z, list(fn = file_name, old_fn = slist[[i]], ri = ri, rep = 1))
+    if (verbose || xtra_v) cli::cli_inform(c(
+      "v" = "\'{slist[[i]]}\' updated and renamed: \'{file_name}\'"
+    ))
     return(z)
   })
   file_name_dt <- data.table::rbindlist(file_name_dt)
@@ -181,18 +189,23 @@ header_sts <- function(
     # rename saved files if they don't still need nomenclature updates
     no_update <- split_file_name_dt[update == TRUE]
     tbl_update <- split_file_name_dt[update == FALSE]
-    future.apply::future_lapply(seq_len(nrow(tbl_update)), function(i) {
-      fn <- file.path(pipe_house$wait_room, paste0(tbl_update$fn[i], "__",
-        tbl_update$rep[i], file_ext_out
-      ))
-      old_fn <- file.path(pipe_house$wait_room, paste0(tbl_update$old_fn[i]))
-      if (file.exists(old_fn)) {
-        s <- file.rename(from = old_fn, to = fn)
-      } else {
-        s <- FALSE
+    if (nrow(tbl_update) > 0) {
+      if (xtra_v) {
+        cli::cli_inform(c("i" =
+            "Altering {nrow(tbl_update)} name{?s} owing to duplicate name{?s}",
+          " " = "This is done if original file names were not unique.",
+          " " = paste0("A suffix {.var __n} is added to files,",
+            " where {.var n} is the duplicate number."
+          )
+        ))
       }
-      invisible(s)
-    })
+      fn <- file.path(pipe_house$wait_room,
+        paste0(tbl_update$fn, "__", tbl_update$rep, file_ext_out)
+      )
+      old_fn <- file.path(pipe_house$wait_room, basename(tbl_update$old_fn))
+      fne <- file.exists(old_fn)
+      file.rename(from = old_fn[fne], to = fn[fne])
+    }
     data.table::setnames(tbl_update, old = c("fn", "old_fn", "ri"),
       new = c("file_name", "old_file_name", "record_interval")
     )
@@ -203,11 +216,17 @@ header_sts <- function(
     tbl_update <- NULL
     no_update <- NULL
   }
-  cr_msg <- padr(core_message =
-      paste0("  headers standarised  ", collapes = ""), wdth = 80,
-    pad_char = "=", pad_extras = c("|", "", "", "|"), force_extras = FALSE,
-    justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
+  if (verbose || xtra_v) {
+    cli::cli_h1("")
+    cli::cli_inform(c(
+      "What next?",
+      "*" = paste0(
+        "When header standardisation of a file is complete, the file is ",
+        "renamed with the extension \'.iph\'."
+      ),
+      "v" = "\'.iph\' files are ready for phenomena standardisation.",
+      ">" = "Use {.var phenomena_sts()} to begin phenomena standardisation."
+    ))
+  }
   invisible(list(updated_files = tbl_update, no_updates = no_update))
 }

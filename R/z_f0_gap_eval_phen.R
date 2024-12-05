@@ -23,14 +23,9 @@ phen_gaps <- function(
   gap_problem_thresh_s = 6 * 60 * 60,
   tbl_n = "^raw_*",
   verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
-  # pipe_house <- pipe_house
-  # station_file <- station_file
-  # verbose <- TRUE
-  # xtra_v <- T
-  # tbl_n = "^raw_*"
-  # phens <- NULL
 
   "%ilike%" <- ".SD" <- ":=" <- "." <- NULL
   "table_name" <- "problem_gap" <- "phen" <- "int" <- "gsdttm" <- "dttm1" <-
@@ -51,7 +46,9 @@ phen_gaps <- function(
   )
   tbl_n <- sfc[names(sfc) %ilike% tbl_n]
   if (length(sfc) == 0) {
-    message(paste0("No match for ", tbl_n, " in ", station_file, "."))
+    cli::cli_inform(c(
+      "No match for table name {tbl_n} in station_file {station_file}."
+    ))
     return(NULL)
   }
   dts <- sf_dta_read(sfc = sfc, verbose = verbose, tv = names(tbl_n))

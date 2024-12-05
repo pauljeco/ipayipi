@@ -178,10 +178,10 @@ dt_harvest <- function(
     h[[x]]$gaps <- gxg
     # save the data/index
     saveRDS(h[[x]], file.path(dirname(sfc)[1], paste0(ppsid, "_hsf_table_", x)))
-    ipayipi::msg(cat(
-      crayon::bgWhite(" Harvested data link info (column headers only) ...  ")
-    ), xtra_v)
-    if (xtra_v) print(h[[x]]$indx$dta_n)
+    if (xtra_v) {
+      cli::cli_inform(c("i" = "Harvested data link info (column headers only)"))
+      print(h[[x]]$indx$dta_n)
+    }
     return(x)
   })
   return(list(hsf_dts = hsf_names, ppsij = ppsij))

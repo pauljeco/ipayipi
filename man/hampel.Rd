@@ -18,14 +18,21 @@ hampel(
 \arguments{
 \item{x}{Values on which to perform the hampel filter evaluation.}
 
+\item{w}{Total width of the filter window.}
+
+\item{d}{The number of deviations from the central tendacy of the window used to detect outlier values.}
+
 \item{robust}{If FALSE the mean is used for interpolation instead of the median value.}
-
-\item{w_width}{Total width of the filter window.}
-
-\item{x_devs}{The number of deviations from the central tendacy of the window used to detect outlier values.}
 }
 \description{
-Applies the non-linear hampel filter to elements of a vector. The hampel is used to detect ourliers and produce estimates for imputation.
+Applies the non-linear hampel filter to elements of a vector. The hampel is used to detect ourliers and produce estimates for imputation. If the focal value is an NA value the median is returned.
+}
+\details{
+\itemize{
+\item hampel ref
+\item customistion here
+\item and warnings
+}
 }
 \author{
 Paul J Gordijn
