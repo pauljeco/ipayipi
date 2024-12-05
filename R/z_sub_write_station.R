@@ -39,11 +39,12 @@ write_station <- function(
   keep_open = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- NULL
 
-  ipayipi::msg(paste0("Writing station: ", station_file), xtra_v)
+  ipayipi::msg(paste0("Writing station: ", station_file), chunk_v)
   if (is.null(station_file) || is.null(pipe_house)) {
     return("No station file path (`pipe_house`) or filename ('station_file')!")
   }
@@ -141,7 +142,7 @@ write_station <- function(
   if (all(!keep_open, extmp)) unlink(sf_tmp, recursive = TRUE)
   if (all(keep_open, !extmp)) {
     sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file =
-        station_file, verbose = verbose, xtra_v = xtra_v
+        station_file, verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   } else {
     sfc <- NULL

@@ -1,5 +1,5 @@
 #' @title Rechunks data
-#' @description If the chunk interval of data needs to be changed. This is the function that handles it. Date are chunked
+#' @description If the chunk interval of data needs to be changed. This is the function that handles it. Data are chunked
 #' @param dta_room File path to the directory where the data will be and/or is chunked and indexed.
 #' @param dta_sets List of data sets, belonging to the same data series to chunk in the `dta_room`.
 #' @param tn Name of the data table to be chunked. The tables data time-series qualities must be consistent with ipayipi's 'continuous', 'event_based', or 'mixed' series qualities.
@@ -13,19 +13,23 @@
 #' @export
 #' @author Paul J Gordijn
 sf_dta_chunkr_sub_rechnk <- function(
-    dta_room = NULL,
-    dts_min = NULL,
-    dts_max = NULL,
-    indx = NULL,
-    chunk_i = NULL,
-    rechunk = FALSE,
-    buff_period = "10 years",
-    i_zeros = 5,
-    verbose = TRUE,
-    xtra_v = FALSE,
-    ...) {
+  dta_room = NULL,
+  dts_min = NULL,
+  dts_max = NULL,
+  indx = NULL,
+  chunk_i = NULL,
+  rechunk = FALSE,
+  buff_period = "50 years",
+  i_zeros = 5,
+  verbose = TRUE,
+  xtra_v = FALSE,
+  chunk_v = FALSE,
+  ...
+) {
   "chnk_fl" <- "chnk_cl" <- "dta" <- NULL
-  ipayipi::msg("Rechuning: sf_dta_chunkr_sub_rechnk()", xtra_v)
+  if (chunk_v) cli::cli_inform(c(
+    ">" = "Rechunking: sf_dta_chunkr_sub_rechnk()"
+  ))
   # rechunk data ----
   if (rechunk && !is.null(indx) && chunk_i != indx$chunk_i) {
     imn <- min(c(dts_min, indx$mn))
@@ -51,7 +55,7 @@ sf_dta_chunkr_sub_rechnk <- function(
       ))
       w <- ipayipi::chunkr_sub_wr(dta_room = rechunk_room, write_tbl = wd,
         dta_sets = d, i_zeros = i_zeros, rit = indx$rit, ri = indx$ri,
-        overwrite = TRUE, xtra_v = xtra_v
+        overwrite = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
       )
       itx <- readRDS(file.path(rechunk_room, "aindxr"))
       itx$indx_tbl <- itx$indx_tbl[!indx %in% w$indx]

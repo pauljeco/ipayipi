@@ -9,11 +9,11 @@
 #' @export
 rici <- function(ri = NULL, ci = NULL, setup_name = NA, ...) {
   if (any(is.null(ri), is.null(ci))) {
-    message(paste0("Both row index and column index must be supplied for ",
-      setup_name
+    cli::cli_abort(c(
+      "Both row index and column index must be supplied for {setup_name}",
+      "E.g., {setup_name}, = {.var rici(ri = 1, ci = 3)}",
+      ">" = "Supply ri ci values!"
     ))
-    message(paste0("E.g., ", setup_name, " = rici(ri = 1, ci = 3)"))
-    stop("Supply ri ci values!")
   }
   return(as.integer(c(ri, ci)))
 }

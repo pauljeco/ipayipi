@@ -46,13 +46,6 @@ agg_param_eval <- function(
   "%ilike%" <- "agg_f" <- "measure" <- "phen_name" <- "stage" <-
     "phen_out_name" <- ":=" <- "table_name" <- "ppsid" <-
     "diff_secs" <- "var_type" <- NULL
-  # agg_offset = c("0 secs", "0 secs")
-  # all_phens = TRUE
-  # ignore_nas = FALSE
-  # agg_intervals = NULL # list of time intervals used to aggregate data
-  # agg_dt_suffix = "_agg" # suffix to use when naming the ourput agg tables
-  # agg_parameters = NULL # argument genereated using `agg_params` nested within `agg()`
-  # gaps = TRUE 
 
   d_args <- list(agg_intervals = NULL, agg_dt_suffix = "_agg",
     ignore_nas = FALSE, all_phens = TRUE, agg_offset = "0 secs",
@@ -141,11 +134,13 @@ agg_param_eval <- function(
     for (i in seq_along(f_params)) assign(names(f_params[i]), f_params[[i]])
 
     # read phens_dt
-    phens_dt <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
+    phens_dto <- sf_dta_read(sfc = sfc, tv = "phens_dt")[["phens_dt"]]
 
-    # yet to implement --- filter phens
+    # filter phens
     if (!all_phens && nrow(xd) > 0) {
-      phens_dt <- phens_dt[phen_name %in% xd$phen_name]
+      phens_dt <- phens_dto[phen_name %in% xd$phen_name]
+    } else {
+      phens_dt <- phens_dto
     }
 
     # generate default agg_info table based on phens_dt
@@ -159,6 +154,16 @@ agg_param_eval <- function(
       unlist(gregexpr("_", phens_dt$ppsid))[1] - 1
     ))
     phens_dt <- phens_dt[stage == ppsij$dt_n[1]][, -c("stage"), with = FALSE]
+
+    # message if no phens are found for aggregation
+    if (nrow(phens_dt) == 0) {
+      cli::cli_inform(c("i" = "In aggregation:",
+        "!" = "No phens to aggregate --- no matching phens harvested!",
+        "i" = " Searching for phens:", "*" = "{xd$phen_name}",
+        "i" = "Available phens:", "*" = "{phens_dto$phen_name}",
+        ">" = "Please check agg_param_eval parameters."
+      ))
+    }
     # get agg functions
     p <- merge(x = phens_dt, y = ftbl, by = "measure", all.x = TRUE)
     # check phen_dt for info and generate functions accordingly
@@ -315,12 +320,15 @@ agg_param_eval <- function(
       phen_name %in% c(rp$phen_out_name, "gid")
     ]
     if (nrow(rphen) == 0) {
-      message(paste0("No new aggregate phens described. \n This will likely ",
-        "cause problems in further processing. \n Ensure all phenomena",
-        "parameters are described, e.g., especially the 'measure' required",
-        "for matching an aggregation function."
+      cli::cli_inform(c("i" = "In aggregation",
+        "!" = "No new aggregate phens described.",
+        "x" = "This will likely cause problems in further processing.",
+        ">" = paste0("Ensure all phenomena parameters are described, e.g.,",
+          " especially the 'measure' required for matching an aggregation",
+          " function.", collapse = ""
+        ),
+        "*" = "Proposed new phenomena below:"
       ))
-      message("Proposed new phenomena below")
       print(phen_dt_new)
     }
     dt_parse <- list(phens_dt = rphen, f_params = list(agg_params = rp))

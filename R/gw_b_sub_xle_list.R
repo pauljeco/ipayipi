@@ -19,7 +19,8 @@
 gw_xle_list <- function(
   input_dir = NULL,
   recurr = FALSE,
-  ...) {
+  ...
+) {
   xlefiles_path <- list.files(
     path = input_dir, pattern = "*.xle",
     recursive = recurr, include.dirs = T, full.names = T)

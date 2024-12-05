@@ -15,8 +15,6 @@
 #' @param unwanted Similar to wanted, but keywords for filtering out unwanted stations.
 #' @param prompt Should the function use an interactive file selection function otherwise all files are returned. TRUE or FALSE.
 #' @param recurr Should the function search recursively into sub directories for hobo rainfall csv export files? TRUE or FALSE.
-#' @param cores  Number of CPU's to use for processing in parallel. Only applies when working on Linux.
-#' @param keep_open Logical. Keep _hidden_ 'station_file' open for ease of access. Defaults to `FALSE`.
 #' @author Paul J. Gordijn
 #' @details Gap data for each station and respective tables are extracted from the station, using `ipayipi::gap_eval()`. Gap tables are combined with the full record of data in a data summary table and plotted using ggplot2. Note that 'gaps' can be edited by imbibing metadata into a stations record, _see_ `ipayipi::gap_eval()` for details.
 #' @return A list containing a plot, which shows the availability of data, the gap data as formatted for plotting. The plot is produced using `ggplot2::ggplot()`.
@@ -24,8 +22,8 @@
 #' @author Paul J. Gordijn
 #' @export
 dta_availability <- function(
-  input_dir = ".",
   pipe_house = NULL,
+  input_dir = ".",
   phen_names = NULL,
   station_ext = ".ipip",
   gap_problem_thresh_s = 6 * 60 * 60,
@@ -34,13 +32,13 @@ dta_availability <- function(
   end_dttm = NULL,
   tbl_names = NULL,
   meta_events = "meta_events",
-  verbose = FALSE,
   wanted = NULL,
   unwanted = NULL,
   recurr = TRUE,
   prompt = FALSE,
-  keep_open = TRUE,
+  verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   ":=" <- "%chin%" <- NULL
@@ -57,21 +55,24 @@ dta_availability <- function(
   names(slist) <- basename(slist)
   sn <- gsub(paste0(station_ext, "$"), "", basename(slist))
   if (anyDuplicated(sn) > 0) {
-    message("Reading duplicated stations ('stnd_title') not allowed!")
-    message("Refine search keywords using the 'un\\wanted arguments")
-    print(slist[order(sn)])
+    cli::cli_inform(c(
+      "!" = "Reading duplicated stations ({.var stnd_title}) not allowed!",
+      "i" = "Available station file list: \n {slist[order(sn)]}",
+      ">" =
+        "Refine station search using args: {.var wanted} and {.var unwanted}"
+    ))
     return(NULL)
   }
   if (length(slist) == 0) {
-    stop("Refine search parameters---no station files detected.")
+    cli::cli_abort(c("Refine search parameters---no station files detected."))
   }
 
   # check if the plot tbls are present
   sedta <- lapply(seq_along(slist), function(i) {
-    print(i)
     ds <- sf_dta_read(pipe_house = pipe_house, tv = "data_summary",
-      station_file = slist[i], tmp = TRUE
+      station_file = slist[i], tmp = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
     )[["data_summary"]]
+    if (is.null(ds)) return(NULL)
     ds <- ds[, c("start_dttm", "end_dttm", "stnd_title", "table_name")]
     tbl <- unique(ds$table_name)
     # select tbl based on ordering of tbl_names
@@ -80,7 +81,8 @@ dta_availability <- function(
       tbln <- tbl_names[tbl_names %chin% tbl]
       tbl <- tbl[order(tbln)][1]
     }
-    ds <- ds[table_name %chin% tbl]
+    if (any(sapply(tbl, is.na))) return(NULL)
+    ds <- ds[table_name %chin% c(tbl)]
     if (nrow(ds) == 0) return(NULL)
     return(ds)
   })
@@ -121,7 +123,7 @@ dta_availability <- function(
   # extract data for gaps ----
   gaps <- lapply(slist, function(x) {
     dta <- sf_dta_read(station_file = x, pipe_house = pipe_house,
-      tv = "gaps", verbose = verbose, xtra_v = xtra_v
+      tv = "gaps", verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
     return(dta$gaps)
   })
@@ -129,16 +131,18 @@ dta_availability <- function(
   # produce gap tables where they are missing
   run_gaps <- slist[sapply(gaps, is.null)]
   lapply(run_gaps, function(x) {
-    open_sf_con(pipe_house = pipe_house, station_file = x)
+    open_sf_con(pipe_house = pipe_house, station_file = x, chunk_v = chunk_v,
+      xtra_v = xtra_v
+    )
   })
   run_gap_gaps <- lapply(run_gaps, function(x) {
     g <- ipayipi::gap_eval(pipe_house = pipe_house, station_file = x,
       gap_problem_thresh_s = gap_problem_thresh_s, event_thresh_s =
         event_thresh_s, meta_events = meta_events,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
     ipayipi::write_station(pipe_house = pipe_house, sf = g, station_file = x,
-      overwrite = TRUE, append = TRUE
+      overwrite = TRUE, append = TRUE, chunk_v = chunk_v
     )
     g$gaps <- g$gaps[problem_gap == TRUE]
     invisible(g$gaps)
@@ -184,12 +188,12 @@ dta_availability <- function(
     use.names = TRUE
   )
   gs <- gs[, ":="(start_dttm = gap_start, end_dttm = gap_end)]
-  gs$table_wrd <- paste0(gs$station, ": ", gs$data_yes)
   sedta <- sedta[, station := stnd_title][, gid := ""]
   gs <- rbind(gs, sedta, use.names = TRUE, fill = TRUE)
+  gs$table_wrd <- paste0(gs$station, ": ", gs$data_yes)
 
   p <- suppressWarnings(ggplot2::ggplot(
-    gs[phen %in% "logger"],
+    gs[data_yes %in% 1],
     ggplot2::aes(
       y = data_yes, x = start_dttm,
       group = data_yes, colour = station,
@@ -211,8 +215,10 @@ dta_availability <- function(
         ),
         colour = station
       ), linewidth = 2
-    ) +
-    ggplot2::geom_segment(
+    )
+  )
+  if (nrow(gs[phen %in% "logger"]) > 0) {
+    p <- p + suppressWarnings(ggplot2::geom_segment(
       data = gs[phen %in% "logger"],
       inherit.aes = FALSE,
       ggplot2::aes(
@@ -224,8 +230,8 @@ dta_availability <- function(
         )
       ),
       colour = "#801b1b", linewidth = 6
-    )
-  )
+    ))
+  }
 
   if (nrow(gs[!phen %in% "logger" & !is.na(phen)]) > 0) {
     p <- suppressWarnings(p + ggplot2::geom_segment(
@@ -246,7 +252,7 @@ dta_availability <- function(
       breaks = sedta$data_yes, labels = paste0(
         sedta$station, "\n", sedta$table_name
       )
-    ) + khroma::scale_colour_sunset(discrete = TRUE) +
+    ) + khroma::scale_colour_sunset(scale_name = "station", discrete = TRUE) +
     ggplot2::labs(x = "Date") +
     egg::theme_article() +
     ggplot2::theme(axis.title.y = ggplot2::element_blank(),

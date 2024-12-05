@@ -16,5 +16,5 @@ solonist <- list(
   instrument_info_tree = "//Body_xle/Instrument_info_data_header",
   phen_info_tree = "//Body_xle/*[starts-with(name(), 'Ch')]",
   date_time_tree = c("//Body_xle/Data/Log/Date", "//Body_xle/Data/Log/Time")
-  )
+)
 usethis::use_data(solonist, overwrite = TRUE)

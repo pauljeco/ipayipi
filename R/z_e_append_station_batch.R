@@ -32,6 +32,7 @@ append_station_batch <- function(
   phen_id = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   # get list of station names in the ipip directory
@@ -59,11 +60,15 @@ append_station_batch <- function(
   })
   station_files <- gsub(station_ext, "", station_files)
   ## statread
+  if (xtra_v || chunk_v && length(station_files)) cli::cli_inform(c(
+    ">" = "Decompressing extant station files for rapid querying.",
+    " " = "Query used to determine which files require append operations."
+  ))
   all_station_files <- unlist(lapply(
     station_files, function(x) {
       sfc <- ipayipi::open_sf_con(pipe_house = pipe_house,
         station_file = paste0(x, station_ext), tmp = TRUE,
-        xtra_v = xtra_v, verbose = verbose
+        chunk_v = chunk_v, verbose = verbose
       )
       all_station_files <- readRDS(sfc[names(sfc) %in% "data_summary"])[[
         "nomvet_name"
@@ -75,16 +80,19 @@ append_station_batch <- function(
   new_station_files <- nom_stations[
     !names(nom_stations) %in% all_station_files
   ]
-  stations_to_update <- unique(new_station_files)
-  cr_msg <- padr(
-    core_message = paste0(" Updating ", length(stations_to_update),
-      " stations with ", length(new_station_files),
-      " standarised files ... ", collape = ""
-    ), wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
-
+  if (length(length(new_station_files)) == 0) {
+    cli::cli_inform("v" = "Station files up to date.")
+    invisible(NULL)
+  }
+  if (verbose || xtra_v || chunk_v) {
+    cli::cli_h1(paste0("Updating {length(unique(new_station_files))} ",
+      "station{?s} with {length(new_station_files)} standardised file{?s}"
+    ))
+  }
+  if (fcoff()) {
+    xtra_v <- FALSE
+    chunk_v <- FALSE
+  }
   # update and/or create new stations
   # upgraded_stations <- lapply(seq_along(new_station_files), function(i) {
   sf_dt <- data.table::data.table(sf = unlist(new_station_files),
@@ -98,21 +106,20 @@ append_station_batch <- function(
         x[i][["sf_file"]]
       ))
       new_data$phens$table_name <- new_data$data_summary$table_name[1]
-      cr_msg <- padr(
-        core_message = paste0(" +> ", i, ": ", x[i][["sf_file"]],
-          collapes = ""
-        ), wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-        force_extras = FALSE, justf = c(1, 1)
-      )
-      ipayipi::msg(cr_msg, verbose)
+      if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
+        " " = "{i}: working on {x[i][[\'sf_file\']]}"
+      ))
       # get/make station file
       fp <- file.path(pipe_house$ipip_room, paste0(x[i][["sf"]], station_ext))
       if (!file.exists(fp)) {
         # create new station file
         ipayipi::write_station(pipe_house = pipe_house, sf = new_data,
           station_file = paste0(x[i][["sf"]], station_ext),
-          overwrite = TRUE, append = FALSE
+          overwrite = TRUE, append = FALSE, chunk_v = chunk_v
         )
+        if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
+          "v" = "{paste0(x[i][[\'sf\']], station_ext)} created"
+        ))
       } else {
         # append data
         station_file <- paste0(x[i][["sf"]], station_ext)
@@ -122,6 +129,9 @@ append_station_batch <- function(
           by_station_table = by_station_table, phen_id = phen_id,
           verbose = verbose, xtra_v = xtra_v
         )
+        if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
+          ">" = "{paste0(x[i][[\'sf\']], station_ext)} updated"
+        ))
       }
       # close station file connection if finished with the station
       j <- i + 1
@@ -129,19 +139,32 @@ append_station_batch <- function(
       if (i == j) {
         ipayipi::write_station(pipe_house = pipe_house, station_file =
             paste0(x[i][["sf"]], station_ext), append = TRUE,
-          overwrite = TRUE
+          overwrite = TRUE, chunk_v = chunk_v
         )
       }
+      if (verbose || chunk_v || xtra_v) cli::cli_inform(c(
+        " " = "finished with {paste0(x[i][[\'sf\']], station_ext)}"
+      ))
       invisible(x[i][["sf"]])
     })
     invisible(unique(upgraded_stations))
-  })
-
+  }, future.conditions = NULL, future.stdout = NA)
   upgraded_stations <- ups
-  cr_msg <- padr(core_message = paste0("  stations appended  ", collapes = ""),
-    wdth = 80, pad_char = "=", pad_extras = c("|", "", "", "|"),
-    force_extras = FALSE, justf = c(0, 0)
-  )
-  ipayipi::msg(cr_msg, verbose)
+  if (verbose || xtra_v || chunk_v) {
+    cli::cli_h1("")
+    cli::cli_inform(c(
+      "What next?",
+      "v" = "Station files created/updated.",
+      "i" = paste0("Station files are now decompressed for rapid read/write .",
+        "access in further processing."
+      ),
+      ">" = "Process, visualise, export and query data with:",
+      "*" = "{.var gap_eval_batch()},",
+      "*" = "{.var dta_availability()},",
+      "*" = "{.var meta_to_station()},",
+      "*" = "{.var dt_process_batch()},",
+      "*" = "{.var dta_flat_pull()}, and much more..."
+    ))
+  }
   invisible(upgraded_stations)
 }

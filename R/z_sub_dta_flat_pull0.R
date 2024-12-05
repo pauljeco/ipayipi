@@ -54,8 +54,11 @@ dta_flat_pull0 <- function(
   )
   sn <- gsub(paste0(file_ext, "$"), "", basename(slist))
   if (anyDuplicated(sn) > 0) {
-    message("Reading duplicated stations ('stnd_title') not allowed!")
-    message("Refine search keywords using the 'un\\wanted arguments")
+    cli::cli_inform(c("While querying staitons",
+      "!" = "Reading duplicated stations {.var stnd_title} not allowed!",
+      ">" =
+        "Refine search keywords using {.var wanted} and {.var unwanted} args."
+    ))
     print(slist[order(sn)])
     return(NULL)
   }

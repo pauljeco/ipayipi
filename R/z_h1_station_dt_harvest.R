@@ -25,7 +25,7 @@ dt_harvest <- function(
     "gap_start" <- "gap_end" <- "gl2" <- "gi1" <- "gl1" <- "gi2" <-
     "gz_p" <- "p" <- "gz_gid" <- "gid" <- "gz_eid" <- "eid" <- "gz_gap_type" <-
     "gap_type" <- "gz_table_name" <- "gz_problem_gap" <- "problem_gap" <-
-    "gz_notes" <- "notes" <- "dt_diff_s" <- NULL
+    "gz_notes" <- "notes" <- "dt_diff_s" <- "phen_name" <- "phen_gap" <- NULL
 
   # harvest data from tables
   if (station_file == unique(f_params$hsf_station)[1]) {
@@ -94,7 +94,7 @@ dt_harvest <- function(
         ]
         gi <- gi[, ":="(gi1 = gap_start, gi2 = gap_end, p = phen)]
         # join data
-        z <- glz[gi, on = .(gl2 >= gi1, gl1 >= gi2, gz_p == p)][
+        z <- glz[gi, on = .(gl2 >= gi1, gl1 <= gi2, gz_p == p)][
           order(phen, gap_start, gap_end)
         ]
         sdc <- c("gap_start", "gap_end", "gz_gap_start", "gz_gap_end")
@@ -148,9 +148,22 @@ dt_harvest <- function(
         z <- unique(z,
           by = c("phen", "table_name", "gz_gap_start", "gz_gap_end")
         )
+        # anti-join logger gaps - adds in logger joins not included in the
+        # left joins above
         z <- z[, c(paste0("gz_", glz_n)), with = FALSE]
         names(z) <- gsub("^gz_", "", names(z))
+        z <- z[, ":="(gi1 = gap_start, gi2 = gap_end)]
+        zl <- z[glz, on = .(gi1 <= gl2, gi2 >= gl1), mult = "all"
+        ][is.na(phen)][, c(paste0("gz_", glz_n)), with = FALSE]
+        names(zl) <- gsub("^gz_", "", names(zl))
+        z <- z[, glz_n, with = FALSE]
+        z <- rbind(z, zl)
         z <- z[, dt_diff_s := difftime(gap_end, gap_start, units = "secs")]
+        z <- z[order(phen, gap_start, gap_end)]
+        # WRITE TABLES TO HD TO EXAMINE -- TESTING
+        # fwrite(z, 'z.csv')
+        # fwrite(glz, 'glz.csv')
+        # fwrite(gi, 'gi.csv')
       } else {
         z <- glz
       }
@@ -165,8 +178,10 @@ dt_harvest <- function(
     h[[x]]$gaps <- gxg
     # save the data/index
     saveRDS(h[[x]], file.path(dirname(sfc)[1], paste0(ppsid, "_hsf_table_", x)))
-    ipayipi::msg("Harvested data link info", xtra_v)
-    if (xtra_v) print(h[[x]]$indx$dta_n)
+    if (xtra_v) {
+      cli::cli_inform(c("i" = "Harvested data link info (column headers only)"))
+      print(h[[x]]$indx$dta_n)
+    }
     return(x)
   })
   return(list(hsf_dts = hsf_names, ppsij = ppsij))

@@ -26,12 +26,9 @@ record_interval_eval <- function(
   max_rows = 1000,
   ...
 ) {
+  "%chin%" <- NULL
   "second" <- NULL
   # determine record interval
-  getmode <- function(v) {
-    uniqv <- unique(v)
-    uniqv[which.max(tabulate(match(v, uniqv)))]
-  }
   #' only work with the full data set if remove_prompt is T
   if (length(dt) > max_rows && !remove_prompt) {
     dtt <- dt[seq_len(max_rows)]
@@ -39,10 +36,10 @@ record_interval_eval <- function(
     dtt <- dt
   }
   if (length(dtt) < 2) {
-    if (record_interval_type %in% c("continuous", "mixed", "event_based")) {
+    if (record_interval_type %chin% c("continuous", "mixed", "event_based")) {
       record_interval_type <- record_interval_type
     } else {
-      stop("Undetermined interval type. Only one data record!")
+      cli::cli_abort(c("Undetermined interval type. Only one data record!"))
     }
     ri_eval <- list(
       dt = dt,
@@ -101,7 +98,7 @@ record_interval_eval <- function(
     if (all(any(!ri_cks), remove_prompt,
       record_interval_type == "continuous"
     )) {
-      message(paste0("Warning! There are inconsistent record intervals!"))
+      cli::cli_inform(c("!" = "There are inconsistent record intervals!"))
       chosen <- function() {
         n <- readline(prompt = paste0("Would you like to remove the data with",
           " inconsistent time intervals? (Y/n)  ", collapse = ""
@@ -110,7 +107,7 @@ record_interval_eval <- function(
         if (n == "Y") {
           new_dta <- dta_in[ri_cks, ]
           new_dt <- dtt[ri_cks]
-          message("The following data rows were removed!")
+          cli::cli_inform(c("i" = "The following data rows were removed!"))
           print(dtt[!ri_cks])
           print(dta_in[!ri_cks, ])
         }
