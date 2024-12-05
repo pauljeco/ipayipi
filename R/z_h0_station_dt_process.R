@@ -75,9 +75,9 @@ dt_process <- function(
   # read function summary tables
   # open output_dt and associate table summary
   sf_names <- names(sfc)
-  f_summary <- sf_dta_read(pipe_house = pipe_house, sfc = sfc,
+  f_summary <- sf_dta_read(sfc = sfc,
     tv = sf_names[sf_names %ilike% "summary|phens|pipe_seq"],
-    verbose = FALSE
+    chunk_v = FALSE
   )
   f_summary$sf_names <- sf_names
 
