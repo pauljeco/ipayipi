@@ -54,8 +54,11 @@ dta_flat_pull0 <- function(
   )
   sn <- gsub(paste0(file_ext, "$"), "", basename(slist))
   if (anyDuplicated(sn) > 0) {
-    message("Reading duplicated stations ('stnd_title') not allowed!")
-    message("Refine search keywords using the 'un\\wanted arguments")
+    cli::cli_inform(c("While querying staitons",
+      "!" = "Reading duplicated stations {.var stnd_title} not allowed!",
+      ">" =
+        "Refine search keywords using {.var wanted} and {.var unwanted} args."
+    ))
     print(slist[order(sn)])
     return(NULL)
   }
@@ -77,16 +80,6 @@ dta_flat_pull0 <- function(
   names(t) <- slist
   t <- t[!sapply(t, is.null)]
 
-  # prep to join datasets together
-  # check dataset ri's
-  # if (!is.null(ri)) ri <- ipayipi::sts_interval_name(ri)[["sts_intv"]]
-  # if (is.null(ri)) ri <- t[[1]][[1]]$indx$ri
-  # ri_chk <- sapply(t, function(x) x[[1]]$indx$ri) %in% ri
-  # if (any(!ri_chk)) {
-  #   ipayipi::msg("Record-interval mismatch", xtra_v)
-  #   print(sapply(t, function(x) x[[1]]$indx$ri))
-  # }
-  # t <- t[ri_chk]
   mn <- data.table::rbindlist(
     lapply(t, function(x) data.table::data.table(mn = x$Date_time))
   )

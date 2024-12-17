@@ -36,7 +36,7 @@ calc_param_eval <- function(
       essnt_params <- c("measure", "units", "var_type")
       m <- essnt_params[!essnt_params %in% x_names]
       if (length(m) > 0 && length(m) < 3) {
-        stop(paste("Missing parameters:", paste(m, collapse = ", ")))
+        cli::cli_abort(paste("Missing parameters:", paste(m, collapse = ", ")))
       }
       essnt_params <- c(
         "measure", "units", "var_type", "notes", "fork_table"

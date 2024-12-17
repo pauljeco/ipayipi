@@ -19,13 +19,14 @@ append_station <- function(
   phen_id = TRUE,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- "phen_name" <- "table_name" <- "phen_name_full" <-
     "uz_phen_name" <- "origin" <- "date_time" <- NULL
 
   sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file =
-      station_file, verbose = verbose
+      station_file, verbose = verbose, chunk_v = chunk_v
   )
 
   ## read in data ----
@@ -36,7 +37,7 @@ append_station <- function(
 
   # check station names
   if (sf_ds$stnd_title[1] != new_data$data_summary$stnd_title[1]) {
-    stop("Station name mismatch")
+    cli::cli_alert("Station name mismatch")
   }
   # check table names
   tn <- new_data$data_summary$table_name[1]
@@ -108,12 +109,15 @@ append_station <- function(
     ndint <- new_data$data_summary[table_name == tn]$record_interval
     rit <- new_data$data_summary[table_name == tn]$record_interval_type
     if (!ndint %in% stint) {
-      message("Warning difference in record intervals detected!")
+      cli::cli_inform(c("!" = "Difference in record intervals detected!"))
       # if data is continuous and only one record in new data: inherit
       # record_interval from station data
       if (nrow(ndt) < 2) {
-        message(paste0("nrow(", tn, ") data < 2.",
-          " Inheriting record interval from station.", collapse = ""
+        cli::cli_warn(c("i" = "In continuous data from {station_file}:",
+          "nrow({tn}) data < 2.",
+          ">" = paste0("Inheriting 'record interval' from station, such that:",
+            " the interval of {tn} is {stint[1]}"
+          )
         ))
         new_data$data_summary[table_name == tn]$record_interval <- stint[1]
         ndint <- stint[1]
@@ -154,7 +158,7 @@ append_station <- function(
       station_file = station_file, sf_phen_ds = sf_phen_ds, ndt = ndt,
       new_phen_ds = new_phen_ds, tn = tn, overwrite_sf = overwrite_sf,
       phen_dt = phen_dt, rit = rit, ri = ri, phen_id = phen_id,
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   } else {
     phd <- list(
@@ -164,7 +168,7 @@ append_station <- function(
     ri <- new_data$data_summary[table_name == tn]$record_interval[1]
     ri <- gsub("_", " ", ri)
     ipayipi::sf_dta_chunkr(dta_room = file.path(dirname(sfc[1]), tn),
-      tn = tn, ri = ri, rit = rit, dta_sets = list(ndt)
+      tn = tn, ri = ri, rit = rit, dta_sets = list(ndt), chunk_v = chunk_v
     )
   }
 
@@ -186,7 +190,7 @@ append_station <- function(
     # save table to temp dir
     ipayipi::sf_dta_wr(dta_room = file.path(dirname(sfc[1]), nnew_tbl[i]),
       dta = new_tbl[[i]], overwrite = TRUE, verbose = verbose,
-      tn = nnew_tbl[i]
+      tn = nnew_tbl[i], chunk_v = chunk_v
     )
   })
 

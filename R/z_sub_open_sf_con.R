@@ -26,6 +26,7 @@ open_sf_con <- function(
   verbose = FALSE,
   tv = NULL,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- "table_name" <- NULL
@@ -41,7 +42,7 @@ open_sf_con <- function(
   }
 
   if (!file.exists(station_file) && !is.null(pipe_house)) {
-    ipayipi::msg("Error: no station file detected!", verbose = xtra_v)
+    cli::cli_warn(c("This station file {station_file} was not detected!"))
     return(NULL)
   }
 
@@ -56,8 +57,14 @@ open_sf_con <- function(
   if (!tmp || !sf_tmp_ex) {
     sfn <- names(readRDS(station_file))
     if (!is.null(tv)) sfn <- sfn[sfn %ilike% tv]
+    if (chunk_v) {
+      cli::cli_inform(c(" " = "Chunking data ...",
+        " " = "Extracting station file data for rapid read/write:",
+        "i" = "Station file: {station_file}", " " = "Extracting to: {sf_tmp}"
+      ))
+    }
     lapply(sfn, function(x) {
-      ipayipi::msg(paste0("Extracting: ", station_file, ": ", x), xtra_v)
+      if (chunk_v) cli::cli_inform(c("*" = "table/data: {x}"))
       sfx <- readRDS(station_file)[[x]]
       # chunk data ----
       ds <- NULL
@@ -77,9 +84,9 @@ open_sf_con <- function(
       }
       s <- ipayipi::sf_dta_wr(dta_room = file.path(sf_tmp, x),
         dta = sfx, tn = x, rit = rit, ri = ri, verbose = verbose,
-        overwrite = TRUE, xtra_v = xtra_v
+        overwrite = TRUE, xtra_v = xtra_v, chunk_v = chunk_v
       )
-      invisible(file.path(sf_tmp, x))
+      return(file.path(sf_tmp, x))
     })
   }
   # list files and dirs ----

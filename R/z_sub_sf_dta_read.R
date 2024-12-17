@@ -15,17 +15,19 @@
 #' @return Station data tables corresponding to the input table names(`tv`), and chunked data indices with data (if `return_dta` is `TRUE`). If no matching table is found then `NULL` is returned.
 #' @details Used to handle reading ipayipi station data from a variety of station file formats.
 sf_dta_read <- function(
-    sfc = NULL,
-    tv = NULL,
-    pipe_house = NULL,
-    station_file = NULL,
-    tmp = TRUE,
-    return_dta = FALSE,
-    verbose = TRUE,
-    start_dttm = NULL,
-    end_dttm = NULL,
-    xtra_v = FALSE,
-    ...) {
+  sfc = NULL,
+  tv = NULL,
+  pipe_house = NULL,
+  station_file = NULL,
+  tmp = TRUE,
+  return_dta = FALSE,
+  verbose = TRUE,
+  start_dttm = NULL,
+  end_dttm = NULL,
+  xtra_v = FALSE,
+  chunk_v = chunk_v,
+  ...
+) {
   ":=" <- "." <- "d1" <- "d2" <- "chnk_fl" <- "chnk_cl" <- "date_time" <- NULL
   if (is.null(station_file) && !is.null(sfc)) {
     ns <- basename(names(sfc)[1])
@@ -42,8 +44,9 @@ sf_dta_read <- function(
   if (!tmp) {
     # from station file ----
     sfn <- file.path(pipe_house$ipip_room, sf_dir, station_file)
-    cr_msg <- paste0(sfn, ": station data not found!")
-    if (!file.exists(sfn)) ipayipi::msg(cr_msg, verbose)
+    if (!file.exists(sfn)) {
+      cli::cli_inform(c("!" = "{sfn}: station not found."))
+    }
     dta <- attempt::try_catch(expr = readRDS(sfn)[tv], .e = ~NULL, .w = ~NULL)
     dta <- dta[!sapply(dta, function(x) any(is.null(x)))]
     class(dta) <- c(class(dta), "ipip-sf_rds")
@@ -51,7 +54,7 @@ sf_dta_read <- function(
     # from tmp station file ----
     sfc <- ipayipi::open_sf_con(sfc = sfc, pipe_house = pipe_house,
       station_file = file.path(sf_dir, station_file), tmp = TRUE,
-      xtra_v = xtra_v
+      xtra_v = xtra_v, chunk_v = chunk_v
     )
     sfc <- sfc[names(sfc) %in% tv]
     dta <- lapply(sfc, function(x) {
@@ -103,8 +106,9 @@ sf_dta_read <- function(
     names(dta) <- names(sfc)
   }
   if (length(dta) == 0) {
-    m <- paste(tv, " --- data not read or found by sf_dta_read()")
-    ipayipi::msg(m, xtra_v)
+    if (xtra_v) {
+      cli::cli_inform(c("{tv} --- data not read or found by sf_dta_read()"))
+    }
     dta <- NULL
   }
   return(dta)

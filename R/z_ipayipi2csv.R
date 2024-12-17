@@ -26,6 +26,8 @@ ipayipi2csv <- function(
   unwanted = NULL,
   baros = FALSE,
   recurr = TRUE,
+  verbose = FALSE,
+  xtra_v = FALSE,
   ...
 ) {
   "%ilike%" <- NULL
@@ -38,6 +40,12 @@ ipayipi2csv <- function(
     recurr = FALSE, baros = FALSE, unwanted = NULL, wanted = wanted
   )
 
+  if (length(station_files) == 0) {
+    cli::cli_abort(c(
+      "!" = "No station files found in: {pipe_house$ipip_room}"
+    ))
+  }
+
   # read in each file and export respective tables
   exported_stations <- future.apply::future_lapply(
     seq_along(station_files), function(z) {
@@ -49,6 +57,14 @@ ipayipi2csv <- function(
       tab_names <- names(file)
       if (!is.null(wanted_tabs)) {
         tab_names <- tab_names[tab_names %ilike% wanted_tabs]
+        if (length(tab_names) == 0 &&
+            (verbose == TRUE || xtra_v == TRUE)
+        ) {
+          cli::cli_inform(c(
+            "i" = "In station: {station_files[z]}",
+            " " = "No tables matching: {.var wanted_tabs ==} {wanted_tabs}"
+          ))
+        }
       }
       xfiles <- lapply(seq_along(tab_names), function(x) {
         if (any(!class(file[[tab_names[x]]]) %in% "list")) {

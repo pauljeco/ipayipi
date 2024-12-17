@@ -33,7 +33,9 @@ aggs <- function(
   # ensure phen names are provided
   xn <- names(x)
   if (is.null(xn) || "" %in% xn) {
-    message("Missing \'agg_params\' names in \'aggs\'!")
+    cli::cli_inform(c("!" = "Missing aggregation parameters:",
+      "i" = "Missing {.var agg_params} names in {.var aggs}!"
+    ))
     x <- x[!sapply(xn, function(x) is.null(x) || x == "")]
   }
   class(x) <- c("agg_params", "list")

@@ -67,9 +67,11 @@ dt_join <- function(
   sfc = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- NULL
+  "table_name" <- NULL
   # evaluate the f_params
   f_params <- eval(parse(text = f_params))
   if (!is.null(ppsij)) {
@@ -130,23 +132,24 @@ dt_join <- function(
   y_tbl <- ipayipi::dt_dta_open(dta_link = y_tbl[[1]])
 
   args <- c(j_args, list(x_tbl = x_tbl, y_tbl = y_tbl, fuzzy = fuzzy,
-    time_seq = time_seq
+    time_seq = time_seq, xtra_v = xtra_v
   ))
-
-  ipayipi::msg("Pre-join x & y data", xtra_v)
   if (xtra_v) {
+    cli::cli_inform(c("i" = "Pre-join x & y data :"))
+    cli::cli_inform(c("i" = " - x table "))
     print(head(x_tbl))
+    cli::cli_inform(c("i" = " - y table "))
     print(head(y_tbl))
   }
   dt_working <- do.call(what = "mhlanga", args = args)
-  ipayipi::msg("Post-join data", xtra_v)
   if (xtra_v) {
-    ipayipi::msg("Head:", xtra_v)
+    cli::cli_inform(c("i" = "Post-join data :"))
+    cli::cli_inform(c("i" = " - head "))
     print(head(dt_working))
-    ipayipi::msg("Tail:", xtra_v)
+    cli::cli_inform(c("i" = " - tail "))
     print(tail(dt_working))
   }
-  # dttm foor ppsij
+  # dttm for ppsij
   if (all(
     "date_time" %in% names(dt_working),
     nrow(dt_working) > 0
@@ -164,7 +167,7 @@ dt_join <- function(
   ipayipi::sf_dta_chunkr(dta_room = file.path(dirname(sfc)[1], "dt_working"),
     chunk_i = NULL, rechunk = FALSE, dta_sets = list(dt_working),
     tn = "dt_working", ri = ppsij$time_interval[1],
-    verbose = verbose
+    verbose = verbose, chunk_v = chunk_v
   )
 
   # gaps ----

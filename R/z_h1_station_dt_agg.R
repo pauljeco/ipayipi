@@ -31,15 +31,14 @@ dt_agg <- function(
   gaps_phens = NULL,
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   ...
 ) {
   "%ilike%" <- ".N" <- ":=" <- ".SD" <- "." <- NULL
   "dttm_fl" <- "phen_name" <-  "agg_f" <- "dt_record_interval" <-
     "date_time" <- "phen_out_name" <- "agg_intervals" <- "var_type" <-
-    "ignore_nas" <- "gap_start" <- "gap_end" <- "phen" <- "xdt1" <-
-    "xdt2" <- "orig_table_name" <- "ppsid" <- "d1" <- "d2" <-
-    "nas" <- "int" <- "colv" <- "dt_diff_s" <- "p" <- "table_name" <-
-    "tn" <- NULL
+    "ignore_nas" <- "gap_start" <- "gap_end" <- "phen" <-
+    "orig_table_name" <- "ppsid" <- "p" <- "table_name" <- "tn" <- NULL
   # read and prep data 1 ----
   sfcn <- names(sfc)
   if ("dt_working" %in% sfcn) {
@@ -54,6 +53,7 @@ dt_agg <- function(
       unique(f_params$orig_table_name
       ), collapse = "|"
     )]
+    hsf_dta <- hsf_dta[hsf_dta %ilike% paste0("^", ppsij$dt_n[1], "_.")]
     dta_in <- sf_dta_read(sfc = sfc, tv = hsf_dta)
     names(dta_in) <- sub(".*_hsf_table_", "", hsf_dta, fixed = FALSE)
   }
@@ -191,18 +191,14 @@ dt_agg <- function(
           expr = xz[, lapply(.SD, function(x) eval(parse(text = z))),
             by = dttm_fl, .SDcols = cols
           ][, lapply(.SD, function(x) {
-            data.table::fifelse(is.infinite(x) | is.nan(x), NA_real_, x)
+            data.table::fifelse(is.infinite(x) | is.nan(x), NA, x)
           }), by = dttm_fl, .SDcols = cols],
           .w = ~xz[, lapply(.SD, function(x) {
             x <- eval(parse(text = z))
-            #ipayipi::msg(z, xtra_v)
-            #ipayipi::msg("NA/NaN values returning as NA in agg evaluation",
-            #  xtra_v
-            #)
             return(x)
           }), by = dttm_fl, .SDcols = cols
           ][, lapply(.SD, function(x) {
-            data.table::fifelse(is.infinite(x) | is.nan(x), NA_real_, x)
+            data.table::fifelse(is.infinite(x) | is.nan(x), NA, x)
           }), by = dttm_fl, .SDcols = cols]
         ))
         data.table::setnames(xzi, old = "dttm_fl", new = "date_time")
@@ -261,7 +257,7 @@ dt_agg <- function(
     ipayipi::sf_dta_chunkr(rit = "continuous", ri = agg_intv[ri],
       dta_room = file.path(dirname(sfc)[1], names(agg_intv[ri])),
       chunk_i = NULL, rechunk = FALSE, dta_sets = list(dta),
-      tn = names(agg_intv[ri]), verbose = verbose, xtra_v = xtra_v
+      tn = names(agg_intv[ri]), verbose = verbose, chunk_v = chunk_v
     )
     return(agg_intv[ri])
   })

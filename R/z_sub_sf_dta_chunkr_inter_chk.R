@@ -5,6 +5,8 @@
 #' @param dta_sets List of data sets to be written as chunks per the write_tbl.
 #' @param i_zeros The number of leading zeros used to name files.
 #' @param verbose Logical. Whether or not to report messages and progress.
+#' @param xtra_v Logical. Whether to print out extra messages in processing chunks.
+#' @param chunk_v Logical. Extra messages for tracking chunking/chunk debugging.
 #' @keywords Internal.
 #' @export
 #' @noRd
@@ -17,6 +19,7 @@ chunkr_inter_chk <- function(
     i_zeros = NULL,
     verbose = FALSE,
     xtra_v = FALSE,
+    chunk_v = FALSE,
     ...) {
   ".N" <- "dta" <- NULL
   if (is.null(indx$indx_tbl)) return("no chunk index table")
@@ -46,7 +49,7 @@ chunkr_inter_chk <- function(
   wd <- data.table::rbindlist(lapply(inter_fill, function(x) x$wd))
   w <- ipayipi::chunkr_sub_wr(dta_room = dta_room, write_tbl = wd, dta_sets =
       lapply(inter_fill, function(x) x$s), ri = indx$ri, rit = indx$rit,
-    i_zeros = i_zeros, overwrite = FALSE, xtra_v = xtra_v
+    i_zeros = i_zeros, overwrite = FALSE, xtra_v = xtra_v, chunk_v = chunk_v
   )
   return(w)
 }

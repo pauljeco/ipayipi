@@ -44,23 +44,13 @@ gap_eval <- function(
   event_thresh_s = 10 * 60,
   phen_eval = TRUE,
   phens = NULL,
-  keep_open = TRUE,
   meta_events = "meta_events",
   verbose = FALSE,
   xtra_v = FALSE,
+  chunk_v = FALSE,
   tbl_n = "^raw_*",
   ...
 ) {
-  # station_file <- "pipe_data_rainfall/mcp2/ipip_room/mcp_manz_office_rn.ipip"
-  # gap_problem_thresh_s = 6 * 60 * 60
-  # event_thresh_s = 10 * 60
-  # keep_open = TRUE
-  # meta_events = "meta_events"
-  # verbose = FALSE
-  # xtra_v = TRUE
-  # cores = 4
-  # tbl_n = "^raw_*"
-  # phen_eval = TRUE
 
   ":=" <- "%ilike%" <- ".N" <- NULL
   "dt_diff_s" <- "table_name" <- "start_dttm" <- "end_dttm" <- "dta_start" <-
@@ -71,7 +61,8 @@ gap_eval <- function(
 
   # open station connection
   sfc <- ipayipi::open_sf_con(pipe_house = pipe_house,
-    station_file = station_file, verbose = verbose, xtra_v = xtra_v
+    station_file = station_file, verbose = verbose, xtra_v = xtra_v,
+    chunk_v = chunk_v
   )
 
   # generate gap table for each raw data table from data_summary ----
@@ -106,7 +97,10 @@ gap_eval <- function(
     while (l > 1 && any(dx$odd)) {
       dx <- dx[odd != TRUE]
       l <- nrow(dx)
-      dx$odd <- c(dx$start_dttm[1:(l - 1)] > dx$start_dttm[(2:(l))], FALSE)
+      if (nrow(dx) > 1) {
+        dx$odd <- c(dx$start_dttm[1:(l - 1)] > dx$start_dttm[(2:(l))], FALSE)
+      }
+      l <- nrow(dx)
     }
     # get rit and ri
     rit <- dx$record_interval_type
@@ -182,22 +176,21 @@ gap_eval <- function(
   gaps <- gaps[, gid := seq_len(.N), by = table_name]
 
   # write gaps to temporary station file
-  ipayipi::msg("Chunking logger gap data", xtra_v)
+  if (chunk_v) cli::cli_inform(c(" " = "Chunking logger gap data"))
   file.remove(sfc["gaps"], recursive = TRUE)
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   # refresh station connection
-  sfc <- ipayipi::open_sf_con(pipe_house = pipe_house, station_file =
-      station_file, verbose = verbose,
-    xtra_v = xtra_v
+  sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file,
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
 
   # generate phen gaps summary ----
   # this gap summary should not overlap with the logger gap summary
   phen_gaps <- phen_gaps(pipe_house = pipe_house, station_file = station_file,
-    tbl_n = tbl_n, verbose = verbose, xtra_v = xtra_v,
+    tbl_n = tbl_n, verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v,
     gap_problem_thresh_s = gap_problem_thresh_s, phen_eval = phen_eval
   )
   gaps <- rbind(gaps, phen_gaps, use.names = TRUE, fill = TRUE)
@@ -205,10 +198,10 @@ gap_eval <- function(
 
   # write gaps to temporary station file
   file.remove(sfc["gaps"], recursive = TRUE)
-  ipayipi::msg("Chunking logger phen gap data", xtra_v)
+  if (chunk_v) cli::cli_inform(c(" " = "Chunking logger phen gap data"))
   ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
     dta = gaps, overwrite = TRUE, tn = "gaps",
-    verbose = verbose, xtra_v = xtra_v
+    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
   )
   # event data ----
   e <- ipayipi::sf_dta_read(sfc = sfc, tv = meta_events[1], tmp = TRUE,
@@ -396,16 +389,14 @@ gap_eval <- function(
     gaps <- gaps[, gid := seq_len(.N), by = "table_name"]
     # write gaps to temporary station file
     file.remove(sfc["gaps"], recursive = TRUE)
-    ipayipi::msg("Chunking event gap data", xtra_v)
+    if (chunk_v) cli::cli_inform(c(" " = "Chunking event gap data"))
     ipayipi::sf_dta_wr(dta_room = file.path(dirname((sfc[1])), "gaps"),
       dta = gaps, overwrite = TRUE, tn = "gaps",
-      verbose = verbose, xtra_v = xtra_v
+      verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
     )
   }
-  if (!keep_open) {
-    write_station(pipe_house = pipe_house, station_file = station_file,
-      overwrite = TRUE, append = FALSE
-    )
-  }
+  write_station(pipe_house = pipe_house, station_file = station_file,
+    overwrite = TRUE, append = FALSE, chunk_v = chunk_v
+  )
   invisible(list(gaps = gaps))
 }

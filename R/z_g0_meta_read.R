@@ -62,7 +62,7 @@ meta_read <- function(
   if (is.character(meta_file)) {
     meta_file <- file.path(input_dir, meta_file)
     if (!file.exists(meta_file)) {
-      stop("The events metadata database does not exist!")
+      cli::cli_abort("The events metadata database does not exist!")
     }
     edb <- attempt::attempt(data.table::fread(file = meta_file, header = TRUE,
       check.names = FALSE, blank.lines.skip = TRUE, sep = col_dlm,
@@ -74,7 +74,7 @@ meta_read <- function(
         meta_file, header = TRUE, colClasses = "character"
       )))
       if (attempt::is_try_error(edb)) {
-        stop("Failed reading file using base R.")
+        cli::cli_abort("Failed reading file using base R.")
       }
     }
   }
@@ -83,7 +83,7 @@ meta_read <- function(
   }
   # check the column names
   if (!is.null(col_names) && !any(col_names %in% names(edb))) {
-    stop("Column names don\'t match defined \`colnames\`!")
+    cli::cli_abort("Column names don\'t match defined \`colnames\`!")
   } else {
     col_names <- names(edb)
   }
@@ -91,7 +91,7 @@ meta_read <- function(
   edb <- edb[, col_names, with = FALSE]
   # organise column formats
   if (nchar(col_types) != length(names(edb))) {
-    stop("Mismatch between the number of columns and column formats!")
+    cli::cli_abort("Mismatch between the number of columns and column formats!")
   }
   if (!is.null(col_types)) {
     z <- sapply(seq_len(nchar(col_types)), function(i) {
@@ -103,7 +103,7 @@ meta_read <- function(
         unlist(unlist(z[!z %in% rfm]), "!"), collapse = ", "
       ), collapse = ""
       )
-      stop(m)
+      cli::cli_abort(m)
     }
     names(z) <- names(edb)
     vars <- names(z)[z %in% "i"]

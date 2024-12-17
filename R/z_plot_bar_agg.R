@@ -66,7 +66,7 @@ plot_bar_agg <- function(
     dta <- attempt::attempt(tbl_read(x))
     if (attempt::is_try_error(dta)) {
       dta <- NULL
-      message(paste0("Could not read or extract data from: ", x))
+      cli::cli_warn(c("Could not read or extract data from: {x}."))
     }
     return(dta)
   })
@@ -92,7 +92,11 @@ plot_bar_agg <- function(
   dts$month <- lubridate::month(dts$date_time, abbr = TRUE,
     label = TRUE
   )
-  if (show_gaps) pgap <- paste0(phen_name, "_nas") else pgap <- phen_name
+  if (show_gaps && "gid" %in% names(dts)) {
+    pgap <- paste0(phen_name, "_nas")
+  } else {
+    pgap <- phen_name
+  }
   p <- ggplot2::ggplot(dts, ggplot2::aes(
     x = date_time, y = !!as.name(pgap), colour = stnd_title,
     fill = stnd_title
