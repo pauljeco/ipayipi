@@ -1,6 +1,6 @@
 #' @title Build `ipayipi` data pipeline housing for a data family
-#' @description Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline within an existing `pipe_house_dir`. Suggestion is to use default options --- only provide the `pipe_house_dir` that refers to an existing directory for your data pipeline. By providing other parameters the directories can be customised for special-use cases.
-#' The recommentation is to build seperate 'pipe_houses' for different data streams or families, such as, automatic weather stations and water level transducers. Whilst the families are housed in different 'pipe houses', iPayipi can query and process data across different data families.
+#' @description Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline within an \strong{existing} `pipe_house_dir` folder. Suggestion is to use default options: only provide the `pipe_house_dir` that refers to an existing directory for your data pipeline. By providing other parameters the directories can be customised for special-use cases.
+#' The recommentation is to build seperate 'pipe_houses' for different data streams or families, for example, separate out automatic weather stations, stand alone rain gauges, and water-level transducers. Whilst the families are housed in different 'pipe houses', iPayipi enables efficient quering and processing of data across different data families.
 #' @param pipe_house_dir The main pipeline directory/'room' (or folder) in which all pipeline rooms are 'housed'. \bold{NB!} The `pipe_house_dir` direcotry must be relative to the active console/terminal working directory, or the full path name.
 #'\cr \cr
 #' @param r Directory for miscellaneous scripts. Within the 'r' room, a sub directory is created called 'pipe_seq' for housing processing pipeline sequence scripts for `ipayipi::dt_process()`. Suggestion is to leave `NULL` so that this 'room' is nested within the `pipe_house_dir`.
@@ -14,6 +14,7 @@
 #' @param dta_out Used for housing select pipeline data products typically in 'csv' file format.
 #' @param reports Typically used to house 'rmarkdown' reports used for inspection and analysis of data.
 #' @param raw_room 'Room' wherein raw-data files from the `source_room` are systematically archived. If this is set to `NULL` then raw-data files will not be archived by 'ipayipi'.
+#' @param verbose Logical. If `TRUE` some terminal/console messages may provide useful insight.
 #' @keywords initiate pipeline, folder creation, directory structure
 #' @return List of pipeline housing 'rooms' (filepaths).
 #' @details This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is described below. The preffix to the folders created represents this flow of data.
@@ -25,7 +26,7 @@
 #' 5. *ipip_room*: The directory that compiles standardised data from the `nomvet_room` by stations. Station files can be further processed and exported into other formats from here.
 #' 6. *raw_room*:  If defined `ipayipi::imbibe_raw_batch()` can harvest (copy or cut---see funtion documentation) and archive 'raw data' files from the `source_room` and will archive them in the `raw_room` in monthly folders.
 #' \cr
-#' * In older versions of 'ipayipi' the 'pipe_house_dir' argument was named 'pipe_house_dir'; this alteration prevents confusion with the R terminal/console working directory.
+#' {*} In older versions of 'ipayipi' the 'pipe_house_dir' argument was named 'work_dir'; this alteration prevents confusion with the R terminal/console working directory.
 #' @md
 #' @examples
 #' # Inititate pipeline

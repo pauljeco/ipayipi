@@ -1,6 +1,6 @@
-#' @title Evaluate arguments for pipeline univariate filter.
-#' @description The default filter used is the 'hampel' non-linear, non-parametric filter, i.e., it application is suited to time series data. The 'hampel' is the only filter currently implemented.
-#' @param phens List of vectors of phenomena names. Each list item must correspond to a filter 'run'. This allows multiple runs to be performed whilst data is in memory with different parameters being passed to the filter algorithm. If NULL the filter will run on all numeric phenomena. To 'deselect' phenomena from the run include a minus directly before the phenomena name.
+#' @title Evaluate arguments for linear drift correction.
+#' @description Performs linear drift correction of a single phenomena using calibration measurements.
+#' @param phen String name of phenomena name ('phen_name') to undergo drift correction.
 #' @param w Total window size for the filter algorithm. Defaults to ten. Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
 #' @param madf Scalar factor of MAD (median absolute deviation). Higher values relax oulier detection. Defaults to the standard of three.  Must be supplied as a vector or list with subsequent values corresponding to each filter 'run'.
 #' @param align One of the following character options following 'data.table' lateral syntax framework: 1) \bold{'right'} (the default) evaluates the current value, on the right, based on preceeding values, falling to the left; option \bold{'left'} does the opposite evaluting the values to the right; option \bold{centre} places the evauated value in middle of the total window size provided by \bold{w} (option 'centre' is 'left' biased for odd window sizes). This argument is parsed to 'data.table' `frollapply`.
@@ -20,9 +20,9 @@
 #'  - `cush`: When `align` is set to `left` at the 'end' of a data series values cannot be evaluated and therefore set to NA, and vice versa when `align` is `right`. NAs at data start and end extremities are avoided when `cush` is set to `TRUE` by switching `align` properties in these cases. When `align` is set to `center` both 'left' and 'right' alignment are used to fill NA values.
 #' 
 #' @author Paul J. Gordijn
-#' @export
-clean_param_eval <- function(
-  phens = NULL,
+#' export
+driffter_param_eval <- function(
+  phen = NULL,
   w = 21,
   madf = 3,
   align = "left",

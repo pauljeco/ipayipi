@@ -195,10 +195,6 @@ dt_agg <- function(
           }), by = dttm_fl, .SDcols = cols],
           .w = ~xz[, lapply(.SD, function(x) {
             x <- eval(parse(text = z))
-            #ipayipi::msg(z, xtra_v)
-            #ipayipi::msg("NA/NaN values returning as NA in agg evaluation",
-            #  xtra_v
-            #)
             return(x)
           }), by = dttm_fl, .SDcols = cols
           ][, lapply(.SD, function(x) {

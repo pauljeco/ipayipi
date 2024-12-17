@@ -19,13 +19,14 @@
       )
     )
     , "*" = cli::col_grey(
-      paste0("Manually add the \'aa_\' preffix to your \'nomtab.rns\' and",
-        " \'phentab.rps\' files before running {.var header_sts()}, ",
-        "and {.var phenomena_sts()}."
+      paste0("Manually add the \'aa_\' preffix to your \'nomtab.rns\'",
+        " \'phentab.rps\', and \'event_db\' files before running ",
+        "{.var header_sts()}, {.var phenomena_sts()}, and ",
+        "{.var meta_to_station()}, respectively."
       )
     ), "*" = cli::col_grey(
       paste0("Use options {.var verbose} and {.var xtra_v} as a guide ",
-        "setting up and processing"
+        "to setting up and processing"
       )
     ), " " = cli::col_grey(
       "See fuction help files for more info ..."

@@ -79,7 +79,7 @@ phenomena_sts <- function(
     ), "i" = paste0("Files ready for phenomena standardisation have the ",
       "\'.iph\' extension."
     )))
-    return(NULL)
+    invisible(return())
   }
   if (verbose || xtra_v) cli::cli_h1(
     "Standardising {length(slist)} file{?s} phenomena"

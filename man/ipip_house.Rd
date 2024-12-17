@@ -41,13 +41,15 @@ Data moves through an 'ipayipi' pipeline through the following rooms 1--4. Along
 \item{reports}{Typically used to house 'rmarkdown' reports used for inspection and analysis of data.}
 
 \item{raw_room}{'Room' wherein raw-data files from the \code{source_room} are systematically archived. If this is set to \code{NULL} then raw-data files will not be archived by 'ipayipi'.}
+
+\item{verbose}{Logical. If \code{TRUE} some terminal/console messages may provide useful insight.}
 }
 \value{
 List of pipeline housing 'rooms' (filepaths).
 }
 \description{
-Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline within an existing \code{pipe_house_dir}. Suggestion is to use default options --- only provide the \code{pipe_house_dir} that refers to an existing directory for your data pipeline. By providing other parameters the directories can be customised for special-use cases.
-The recommentation is to build seperate 'pipe_houses' for different data streams or families, such as, automatic weather stations and water level transducers. Whilst the families are housed in different 'pipe houses', iPayipi can query and process data across different data families.
+Creates a list of 'rooms', that is, folders/directories, required for an 'ipayipi' data-processing pipeline within an \strong{existing} \code{pipe_house_dir} folder. Suggestion is to use default options: only provide the \code{pipe_house_dir} that refers to an existing directory for your data pipeline. By providing other parameters the directories can be customised for special-use cases.
+The recommentation is to build seperate 'pipe_houses' for different data streams or families, for example, separate out automatic weather stations, stand alone rain gauges, and water-level transducers. Whilst the families are housed in different 'pipe houses', iPayipi enables efficient quering and processing of data across different data families.
 }
 \details{
 This function automates the creation of four/five folders/directories that are requried for bulk processing of files in the ipayipi pipeline structure. The flow of data through an 'ipayipi' pipeline housing system is described below. The preffix to the folders created represents this flow of data.
@@ -59,9 +61,7 @@ This function automates the creation of four/five folders/directories that are r
 \item \emph{ipip_room}: The directory that compiles standardised data from the \code{nomvet_room} by stations. Station files can be further processed and exported into other formats from here.
 \item \emph{raw_room}:  If defined \code{ipayipi::imbibe_raw_batch()} can harvest (copy or cut---see funtion documentation) and archive 'raw data' files from the \code{source_room} and will archive them in the \code{raw_room} in monthly folders.
 \cr
-}
-\itemize{
-\item In older versions of 'ipayipi' the 'pipe_house_dir' argument was named 'pipe_house_dir'; this alteration prevents confusion with the R terminal/console working directory.
+{*} In older versions of 'ipayipi' the 'pipe_house_dir' argument was named 'work_dir'; this alteration prevents confusion with the R terminal/console working directory.
 }
 }
 \examples{

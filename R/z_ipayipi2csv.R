@@ -40,8 +40,8 @@ ipayipi2csv <- function(
     recurr = FALSE, baros = FALSE, unwanted = NULL, wanted = wanted
   )
 
-  if (length(station_files) == 0 && (verbose == TRUE || xtra_v == TRUE)) {
-    cli::cli_inform(c(
+  if (length(station_files) == 0) {
+    cli::cli_abort(c(
       "!" = "No station files found in: {pipe_house$ipip_room}"
     ))
   }

@@ -89,10 +89,10 @@ dta_availability <- function(
 
   slist_null <- slist[sapply(sedta, is.null)]
   if (length(slist_null) > 0) {
-    ipayipi::msg("The following stations have no table called: ", verbose)
-    ipayipi::msg(paste0("\r", paste0(tbl_names, collapse = " or ")), verbose)
-    m <- paste0(slist, collapse = " | ")
-    ipayipi::msg(m, verbose)
+    cli::cli_inform(c(
+      "i" = "These stations: {slist}",
+      " " = "Have no tables named {tbl_names}."
+    ))
   }
   # remove stations with no appropriate tables
   slist <- slist[!sapply(sedta, is.null)]

@@ -4,6 +4,7 @@
 #' @param pipe_house List of pipeline directories. __See__ `ipayipi::ipip_house()` __for details__.
 #' @param pipe_seq Generated processing pipeline structure performed by `ipayipi::pipe_seq()`. Defaults to `NULL`.
 #' If this argument is not provided, then the `pipe_seq` stored in the station file will be used for data processing. When changes are made to a stations processing pipeline `overwrite_pipe_memory` should be set to `TRUE`, in which case a `pipe_seq` object must be provided here---this `pipe_seq` will be embedded in the station file.
+#' @param stages Integer vector denoting the consecutive stages of the `pipe_seq` object to process. Can be used to split a processing pipeline for addition processing between stages (note: each stage contains multiple steps). NB! If proceeeding stages rely on the outputs of preceeding stages, there will be problems in data processing when preceeeding data/metadata has not been processed. Set to `0` (zero) for only running `pipe_seq` evaluation.
 #' @param overwrite_pipe_memory Logical. If `TRUE` then extant pipeline steps, which are summarised in the 'pipe_process_summary' table (*see details*), are modified by arguments in the pipe_process argument.
 #' @param output_dt_preffix The output-table preffix. Defaults is 'dt_'.
 #' @param output_dt_suffix A custom suffix to be appended to the output tables name.
@@ -34,8 +35,8 @@ dt_process <- function(
   output_dt_preffix = "dt_",
   output_dt_suffix = NULL,
   overwrite_pipe_memory = FALSE,
-  verbose = FALSE,
   unwanted_tbls = "_tmp",
+  verbose = FALSE,
   xtra_v = FALSE,
   chunk_v = FALSE,
   ...
@@ -47,16 +48,14 @@ dt_process <- function(
   if (verbose) cli::cli_h2(c("Processing {station_file} ..."))
   # open station file connection
   sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file,
-    verbose = verbose, xtra_v = xtra_v, chunk_v = chunk_v
+    chunk_v = chunk_v
   )
   if (!is.null(pipe_seq) && any(!"pipe_seq" %in% names(sfc),
         overwrite_pipe_memory
       )) {
     saveRDS(pipe_seq, file.path(dirname(sfc[1]), "pipe_seq"))
   }
-  pipe_seq <- sf_dta_read(
-    sfc = sfc, tv = "pipe_seq", verbose = FALSE
-  )[["pipe_seq"]]
+  pipe_seq <- sf_dta_read(sfc = sfc, tv = "pipe_seq")[["pipe_seq"]]
 
   # clean up any temp data
   mfiles <- c("hsf_dts", "dt_working")
@@ -77,7 +76,6 @@ dt_process <- function(
   sf_names <- names(sfc)
   f_summary <- sf_dta_read(sfc = sfc,
     tv = sf_names[sf_names %ilike% "summary|phens|pipe_seq"],
-    chunk_v = FALSE
   )
   f_summary$sf_names <- sf_names
 
@@ -127,11 +125,6 @@ dt_process <- function(
       } else {
         f_params <- NULL
       }
-      # cr_msg <- padr(core_message = paste0(i, "-", j, ": ", f, collapes = ""),
-      #   wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      #   force_extras = FALSE, justf = c(-1, 3)
-      # )
-      # ipayipi::msg(cr_msg, verbose)
       cli::cli_h3(c("{i}-{j}: {f}"))
       args <- list(station_file = station_file, f_params = f_params,
         ppsij = ppsij, full_eval = TRUE, sfc = sfc, verbose = verbose,
@@ -147,8 +140,7 @@ dt_process <- function(
       names(sfc_f_params) <- sfc_f_params_n
       o <- o[!names(o) %in% "f_params"]
       oo <- sf_dta_read(sfc = sfc, tv = names(o),
-        pipe_house = pipe_house, station_file = station_file, tmp = TRUE,
-        verbose = FALSE
+        station_file = station_file, tmp = TRUE,
       )
       if (length(oo) == 0) oo <- NULL
       o <- append_tables(original_tbl = oo, new_tbl = o)
@@ -198,8 +190,7 @@ dt_process <- function(
     })
   })
   sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file)
-  pps <- sf_dta_read(sfc = sfc, tv = "pipe_seq", verbose = FALSE
-  )[["pipe_seq"]]
+  pps <- sf_dta_read(sfc = sfc, tv = "pipe_seq")[["pipe_seq"]]
   if (!is.null(stages)) {
     pps <- pps[dt_n >= min(stages)][dt_n <= max(stages)]
   }
@@ -221,12 +212,6 @@ dt_process <- function(
       } else {
         f_params <- as.list(ppsij$f_params)
       }
-      # cr_msg <- padr(
-      #   core_message = paste0(ppsi$dt_n[1], "-", j, ": ", f, collapes = ""),
-      #   wdth = 80, pad_char = " ", pad_extras = c("|", "", "", "|"),
-      #   force_extras = FALSE, justf = c(-1, 3)
-      # )
-      # ipayipi::msg(cr_msg, verbose)
       cli::cli_h3(c("{ppsi$dt_n[1]}-{j}: {.strong {f}}"))
       # get arguments and process function
       args <- list(station_file = station_file, f_params = f_params,
@@ -269,9 +254,7 @@ dt_process <- function(
   piit <- rbind(opiit[!dt_n %in% piit$dt_n], piit)
   piit <- piit[order(dt_n, dtp_n, n)]
   saveRDS(piit, file.path(dirname(sfc[1]), "pipe_seq"))
-  sfc <- open_sf_con(
-    pipe_house = pipe_house, station_file = station_file
-  )
+  sfc <- open_sf_con(pipe_house = pipe_house, station_file = station_file)
   unwanted_tbls <- paste0(c(unwanted_tbls, "_hsf_table_"), collapse = "|")
   unwanted_tbls <- names(sfc)[names(sfc) %ilike% unwanted_tbls]
   if (length(unwanted_tbls) == 0) unwanted_tbls <- NULL

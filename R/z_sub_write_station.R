@@ -44,7 +44,7 @@ write_station <- function(
 ) {
   "%ilike%" <- NULL
 
-  ipayipi::msg(paste0("Writing station: ", station_file), chunk_v)
+  if (chunk_v) cli::cli_inform("Writing station: {station_file}")
   if (is.null(station_file) || is.null(pipe_house)) {
     return("No station file path (`pipe_house`) or filename ('station_file')!")
   }

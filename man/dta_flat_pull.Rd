@@ -50,6 +50,8 @@ dta_flat_pull(
 
 \item{out_csv}{Logical. If TRUE a csv file is exported to the output directory.}
 
+\item{out_tab_name}{If left \code{NULL} (default), the output table name will be \code{paste0(out_csv_preffix, '_', ri)}, where ri is determined using the \code{ipayipi::sts_interval_name()} or provided by the \code{ri} argument.}
+
 \item{out_csv_preffix}{Preffix for the output csv file. The phenomena name and then time interval by which the data are summarised are used as a suffix.}
 
 \item{recurr}{Whether to search recursively through folders. Defaults to TRUE.}
@@ -68,7 +70,7 @@ dta_flat_pull(
 A list containing 1) the summarised data in a single data.table, 2) a logical table indicating data gaps, 3) a character string representing the time interval by which the data has been summarised, 4) the list of stations used for the summary, 5) the name of the table and the name of the field for which data was summarised, & 6) the station file extension uesd for querying data.
 }
 \description{
-Queries continuous data of common record intervals.
+Queries \strong{continuous} data with common record intervals and converts to 'long' or 'wide' formats.
 }
 \details{
 Note this function only extracts data from decompressed station files. If a station has not be decompressed the function will take time decompressing.

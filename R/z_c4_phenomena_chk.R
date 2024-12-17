@@ -27,6 +27,7 @@ phenomena_chk <- function(
   xtra_v = FALSE,
   ...
 ) {
+  "%chin%" <- ":=" <- NULL
   "uz_phen_name" <- "phen_name" <- "measure" <- "uz_units" <-
     "uz_measure" <- "sensor_id" <- "phen_name_full" <- NULL
   # if there is a more recent csv phentab update the aa_phentab.rps
@@ -100,9 +101,14 @@ phenomena_chk <- function(
   })
   phen_import <- data.table::rbindlist(phen_import)
   if ("phens_sts" %in% class(external_phentab)) {
-    phen_import <- external_phentab[phen_name %in% phen_import$uz_phen_name]
-    phen_import <- phen_import[!phen_name %in% c("id", "date_time")]
-    phentab <- external_phentab
+    phen_import <- phen_import[
+      !uz_phen_name %chin% external_phentab$uz_phen_name
+    ]
+    #phen_import <- external_phentab[phen_name %in% phen_import$uz_phen_name]
+    phen_import <- unique(phen_import[!phen_name %chin% c("id", "date_time")])
+    #phentab <- external_phentab
+    external_phentab <- external_phentab[!phen_name %chin% phentab$phen_name]
+    phentab <- rbind(phentab, external_phentab)
   }
   phentab <- rbind(phentab, phen_import)
 
@@ -111,7 +117,11 @@ phenomena_chk <- function(
   phentab <- phentab[order(phen_name, units, measure, uz_phen_name,
     uz_units, uz_measure, offset, sensor_id
   )]
-
+  # set all na sensor id to 'no_spec' to avoid superflous sts calls
+  phentab[, sensor_id := data.table::fifelse(
+    is.na(sensor_id), "no_spec", sensor_id
+  )]
+  # make phentab unique
   phentab <- unique(phentab,
     by = c("uz_phen_name", "uz_units", "uz_measure", "sensor_id")
   )

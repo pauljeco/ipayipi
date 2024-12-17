@@ -1,5 +1,5 @@
 #' @title Pulls multiple station data into a 'flat' file
-#' @description Queries continuous data of common record intervals.
+#' @description Queries **continuous** data with common record intervals and converts to 'long' or 'wide' formats.
 #' @param input_dir The directory in which to search for stations form which to extract time-series data.
 #' @param pipe_house If the `pipe_house` argument is provided the `pipe_house$ipip_room` will be used instead of the `input_dir`.
 #' @param tab_names Vector of table names in a station files from which to extract data. Add items to the vector such that only the first matching table from a station is selected. Table names are selected via the `%in%` argument.
@@ -10,6 +10,7 @@
 #' @param output_dir The output directory where an output csv file is saved.
 #' @param wanted A strong containing keywords to use to filter which stations are selected for processing. Multiple search kewords should be seperated with a bar ('|'), and spaces avoided unless part of the keyword.
 #' @param unwanted Similar to wanted, but keywords for filtering out unwanted stations.
+#' @param out_tab_name If left `NULL` (default), the output table name will be `paste0(out_csv_preffix, '_', ri)`, where ri is determined using the `ipayipi::sts_interval_name()` or provided by the `ri` argument.
 #' @param out_csv Logical. If TRUE a csv file is exported to the output directory.
 #' @param out_csv_preffix Preffix for the output csv file. The phenomena name and then time interval by which the data are summarised are used as a suffix.
 #' @param recurr Whether to search recursively through folders. Defaults to TRUE.
@@ -90,9 +91,9 @@ dta_flat_pull <- function(
   t <- t[!sapply(t, is.null)]
   if (length(t) == 0) {
     cli::cli_abort(c(
-      "i" = "No matching table names in stations! Available stations below:",
-      print(slist),
-      "success" = "Check the station tables or table name spelling!"
+      "No matching table names in stations!",
+      " " = "Available stations: {slist}",
+      "v" = "Check the station tables or table name spelling!"
     ))
   }
   t <- t[sapply(t, function(x) {
@@ -115,10 +116,20 @@ dta_flat_pull <- function(
   # check dataset ri's
   if (!is.null(ri)) ri <- ipayipi::sts_interval_name(ri)[["sts_intv"]]
   if (is.null(ri)) ri <- t[[1]][[1]]$indx$ri
+  if (ri %chin% "discnt") {
+    cli::cli_abort(c(
+      "i" = "{.var dta_flat_pull() only processes continuous data.}",
+      " " = "Use {.var ipayipi2csv} to export discontinuous data.",
+      " " = "The record interval{?s} of the data you are querying: \'{ri}\'"
+    ))
+  }
   ri_chk <- sapply(t, function(x) x[[1]]$indx$ri) %in% ri
   if (any(!ri_chk)) {
-    ipayipi::msg("Record-interval mismatch", xtra_v)
-    print(sapply(t, function(x) x[[1]]$indx$ri))
+    cli::cli_inform(c(
+      "i" = "Record-interval mismatch.",
+      " " = "The record interval{?s}: sapply(t, function(x) x[[1]]$indx$ri).",
+      ">" = "Refine the search keys for the data you are querying."
+    ))
   }
   t <- t[ri_chk]
   mn <- data.table::rbindlist(
