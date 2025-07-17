@@ -19,7 +19,7 @@ Install the R package 'ipayipi' from Github using `devtools` in your R terminal.
 
 
 ```
-devtools::install_github("SAEONdata/ipayipi")
+devtools::install_github("pauljeco/ipayipi")
 ```
 
 ## Building and running a data pipeline
